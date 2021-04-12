@@ -127,6 +127,21 @@ namespace ProTrans
 
         public static string GetTranslation(string key)
         {
+            if (!Instance.gameObject.activeSelf)
+            {
+                // TranslationManager is deactivated. There are no translations.
+                return key;
+            }
+            if (fallbackMessages.IsNullOrEmpty())
+            {
+                Instance.UpdateCurrentLanguageAndTranslations();
+                // TranslationManager was deactivated. There are no translations.
+                if (!Instance.gameObject.activeSelf)
+                {
+                    return key;
+                }
+            }
+            
             if (currentLanguageMessages.TryGetValue(key, out string translation))
             {
                 return translation;
@@ -140,7 +155,7 @@ namespace ProTrans
                 }
                 else
                 {
-                    Debug.LogError($"No translation for key '{key}'");
+                    Debug.LogError($"No translation for key '{key}' in fallback language.");
                     return key;
                 }
             }
