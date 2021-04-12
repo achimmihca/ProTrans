@@ -1,0 +1,12 @@
+{
+    "name": "ProTransTests",
+    "references": [
+		"ProTrans"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
+}

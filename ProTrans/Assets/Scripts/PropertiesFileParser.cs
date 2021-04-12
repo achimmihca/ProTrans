@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace ProTrans
 {
@@ -11,7 +11,7 @@ namespace ProTrans
 
         public static Dictionary<string, string> ParseFile(string path)
         {
-            string text = File.ReadAllText(path);
+            string text = File.ReadAllText(path, Encoding.UTF8);
             return ParseText(text);
         }
 
@@ -22,7 +22,7 @@ namespace ProTrans
             {
                 for (string line = stringReader.ReadLine(); line != null; line = stringReader.ReadLine())
                 {
-                    KeyValuePair<string, string> entry = ParseLine(line);
+                    KeyValuePair<string, string> entry = ParseLine(line, stringReader);
                     if (!entry.Equals(emptyKeyValuePair))
                     {
                         map.Add(entry.Key, entry.Value);
@@ -32,9 +32,12 @@ namespace ProTrans
             return map;
         }
 
-        private static KeyValuePair<string, string> ParseLine(string line)
+        private static KeyValuePair<string, string> ParseLine(string line, StringReader stringReader)
         {
-            if (IsCommentLine(line))
+            string lineTimmedStart = line.TrimStart();
+            bool isComment = lineTimmedStart.StartsWith("#")
+                             || lineTimmedStart.StartsWith("!");
+            if (isComment)
             {
                 return emptyKeyValuePair;
             }
@@ -48,45 +51,61 @@ namespace ProTrans
             string valuePart = line.Substring(indexOfEquals + 1, line.Length - indexOfEquals - 1);
 
             string trimmedKeyPart = keyPart.Trim();
-            string trimmedValuePart = valuePart.Trim();
+            // For the value, only the start (around the equals sign) is trimmed.
+            string trimmedValuePart = valuePart.TrimStart();
 
-            string unquotedTrimmedKeyPart = RemoveQuotes(trimmedKeyPart);
-            string unquotedTrimmedValuePart = RemoveQuotes(trimmedValuePart);
-
-            string finalValue = ReplaceEscapedCharacters(unquotedTrimmedValuePart);
-
-            return new KeyValuePair<string, string>(unquotedTrimmedKeyPart, finalValue);
+            // Write characters of line to StringBuilder.
+            // Thereby, replace escaped characters.
+            // When line ends with a backslash, also consume the following line.
+            StringBuilder sb = new StringBuilder();
+            ParseEscapedCharacters(trimmedValuePart, sb, stringReader);
+            
+            return new KeyValuePair<string, string>(trimmedKeyPart, sb.ToString());
         }
 
-        private static string ReplaceEscapedCharacters(string text)
+        private static void ParseEscapedCharacters(string line, StringBuilder sb, StringReader stringReader)
         {
-            string result = text.Replace(@"\n", "\n");
-            return result;
-        }
-
-        private static string RemoveQuotes(string text)
-        {
-            if (text.StartsWith("\"") && text.EndsWith("\""))
+            bool isBackslashForFollowingCharacter = false;
+            foreach (char c in line)
             {
-                return text.Substring(1, text.Length - 1);
+                if (isBackslashForFollowingCharacter)
+                {
+                    isBackslashForFollowingCharacter = false;
+                    switch (c)
+                    {
+                        case 't':
+                            sb.Append('\t');
+                            break;
+                        case 'n':
+                            sb.Append('\n');
+                            break;
+                        case 'r':
+                            sb.Append('\r');
+                            break;
+                        default:
+                            sb.Append(c);
+                            break;
+                    }
+                }
+                else if (c == '\\')
+                {
+                    isBackslashForFollowingCharacter = true;
+                }
+                else
+                {
+                    sb.Append(c);
+                }
             }
-            else
+            
+            // Line has ended. Check if it continues on next line.
+            if (isBackslashForFollowingCharacter)
             {
-                return text;
-            }
-        }
-
-        private static bool IsCommentLine(string line)
-        {
-            string trimmedLine = line.TrimStart();
-            if (trimmedLine.StartsWith("#")
-                || trimmedLine.StartsWith("!"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
+                string nextLine = stringReader.ReadLine();
+                if (nextLine != null)
+                {
+                    sb.Append("\n");
+                    ParseEscapedCharacters(nextLine.TrimStart(), sb, stringReader);
+                }
             }
         }
     }
