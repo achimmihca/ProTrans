@@ -45,28 +45,44 @@ Properties files are a standard in the Java world.
 However, ProTrans has some specifics.
 
 ## Encoding
-- Properties files for ProTrans should be encoded in UTF-8 with BOM.
-    - This will ensure that the C# API will load the files correctly.
+- Properties files for ProTrans should be encoded in UTF-8.
     - Note that this encoding differs from the encoding that properties files in Java typically use.
+    - Encoded unicode characters are not supported (e.g. `\u002c`). This also differs from properties files in Java.
+        - Instead, directly use the unescaped character in the UTF-8 encoded file.
 
 ## Syntax
-- Key and value are separated by an equals sign. Whitespace around the key and value is trimmed.
+- Key and value are separated by an equals sign.
+    - Note that a colon cannot be used to separate key and value.
+- Whitespace around the key and the equals sign is trimmed.
+    - Thus the following are equivalent.
+        - `sayHello=Hello!`
+        - `sayHello  = Hello!`
+    - Note that space at the end of the line is NOT trimmed.
 - Comments start with `#` or `!`
-- You can quote strings if needed (e.g. when you want whitespace at the end of the value).
-    - Example: `quotesExample = "These quotes are optional"
 - Use curly braces for named placeholders.
-    - Example: `helloLabel = Hello {name}`
-- Use `\n` for line breaks.
-    - Example: `multiLineExample = This is the first line\nThis is the second line`
+    - Example: `sayHelloWithName = Hello {name}`
+- The characters newline, carriage return, and tab can be inserted as \n, \r, and \t, respectively.
+    - Example: `multiLineExample = First line\nSecond line`
+- You can also use a backslash at the end of a line. Whitespace of such a continued line will be trimmed at the start (but not at the end)
+    - Example:
+    ```
+    multiLineExample2 = First line\
+                        Second line
+    ```
+- The backslash character must be escaped as a double backslash.
+    - Example: `path=c:\\docs\\doc1`
+- To include space at the start of a translation, one can escape this space character
+    - Example: `exampleWithLeadingSpace=\ space at the start`
 
-## Examples:
+### Example:
 ```
 # This is a comment
 demoScene_button_quit_label = Quit
 demoScene_button_quit_tooltip = Closes the game
-demoScene_button_start = "Start"
 demoScene_hello = Hello {name}!
-demoScene_multiline = First line\nSecond line
+demoScene_multilineUsingNewline = First line\nSecond line
+demoScene_multilineUsingBackslash = First line\
+                                    Second line
 ```
 
 # History
