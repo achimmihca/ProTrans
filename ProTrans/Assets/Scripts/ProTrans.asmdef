@@ -1,7 +1,6 @@
 {
   "name": "ProTrans",
   "references": [
-	"Plugins"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

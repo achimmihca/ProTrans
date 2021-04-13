@@ -19,9 +19,9 @@ namespace ProTrans
             fallbackMessages?.Clear();
         }
 
-        public static readonly string propertiesFileFolder = "Translations";
-        public static readonly string propertiesFileExtension = "properties";
-        public static readonly string propertiesFileName = "messages";
+        [Tooltip("Path that should be monitored by the FileSystemWatcher for modifications")]
+        public static string propertiesFileFolderRelativeToProjectFolder = "Assets/Resources/Translations";
+        public string propertiesFileName = "messages";
 
         // Fields are static to be persisted across scenes
         private static TranslationManager instance;
@@ -32,7 +32,10 @@ namespace ProTrans
                 if (instance == null)
                 {
                     instance = FindComponentWithTag<TranslationManager>("TranslationManager");
-                    instance.InitSingleInstance();
+                    if (instance != null)
+                    {
+                        instance.InitSingleInstance();
+                    }
                 }
                 return instance;
             }
@@ -44,7 +47,6 @@ namespace ProTrans
         public bool logInfo;
         public SystemLanguage currentLanguage;
         public SystemLanguage defaultPropertiesFileLanguage = SystemLanguage.English;
-        public bool extractStreamingAssetsOnAndroid = true;
         
         private SystemLanguage lastLanguage;
 
@@ -65,11 +67,6 @@ namespace ProTrans
     #if UNITY_EDITOR
         private void Update()
         {
-            if (Application.isPlaying)
-            {
-                return;
-            }
-
             if (fallbackMessages.IsNullOrEmpty()
                 || lastLanguage != currentLanguage)
             {
@@ -82,6 +79,22 @@ namespace ProTrans
         public List<string> GetKeys()
         {
             return fallbackMessages.Keys.ToList();
+        }
+
+        public List<SystemLanguage> GetTranslatedLanguages()
+        {
+            List<SystemLanguage> result = new List<SystemLanguage>();
+            foreach (SystemLanguage systemLanguage in GetEnumValuesAsList<SystemLanguage>())
+            {
+                string suffix = GetCountryCodeSuffixForPropertiesFile(systemLanguage);
+                string propertiesFilePath = GetPropertiesFilePathInResources(propertiesFileName + suffix);
+                TextAsset textAsset = Resources.Load<TextAsset>(propertiesFilePath);
+                if (textAsset != null)
+                {
+                    result.Add(systemLanguage);
+                }
+            }
+            return result;
         }
 
         public static string GetTranslation(string key, params object[] placeholderStrings)
@@ -167,35 +180,35 @@ namespace ProTrans
             fallbackMessages = new Dictionary<string, string>();
 
             // Load the default properties file
-            string fallbackPropertiesFilePath = GetPropertiesFilePath(propertiesFileName);
-            if (File.Exists(fallbackPropertiesFilePath))
+            string fallbackPropertiesPath = GetPropertiesFilePathInResources(propertiesFileName);
+            TextAsset fallbackPropertiesTextAsset = Resources.Load<TextAsset>(fallbackPropertiesPath);
+            if (fallbackPropertiesTextAsset != null)
             {
-                string fallbackPropertiesFileContent = File.ReadAllText(fallbackPropertiesFilePath);
-                LoadPropertiesFromText(fallbackPropertiesFileContent, fallbackMessages);
+                LoadPropertiesFromText(fallbackPropertiesTextAsset.text, fallbackMessages);
             }
             else
             {
-                Debug.LogError($"Properties file for fallback language not found: {fallbackPropertiesFilePath}. Deactivating TranslationManager.", gameObject);
+                Debug.LogError($"Properties file for fallback language not found in any Resources folder: {fallbackPropertiesPath}. Deactivating TranslationManager.", gameObject);
                 gameObject.SetActive(false);
                 return;
             }
 
             // Load the properties file of the current language
             string propertiesFileNameWithCountryCode = propertiesFileName + GetCountryCodeSuffixForPropertiesFile(currentLanguage);
-            string propertiesFilePath = GetPropertiesFilePath(propertiesFileNameWithCountryCode);
-            if (File.Exists(propertiesFilePath))
+            string propertiesFilePath = GetPropertiesFilePathInResources(propertiesFileNameWithCountryCode);
+            TextAsset propertiesFileTextAsset = Resources.Load<TextAsset>(propertiesFilePath);
+            if (propertiesFileTextAsset != null)
             {
-                string propertiesFileContent = File.ReadAllText(propertiesFilePath);
-                LoadPropertiesFromText(propertiesFileContent, currentLanguageMessages);
+                LoadPropertiesFromText(propertiesFileTextAsset.text, currentLanguageMessages);
             }
             else
             {
-                Debug.LogWarning($"Properties file for language {currentLanguage} not found: {propertiesFilePath}", gameObject);
+                Debug.LogWarning($"Properties file for language {currentLanguage} not found in any Resources folder: {propertiesFilePath}", gameObject);
             }
 
             if (logInfo)
             {
-                Debug.Log("Loaded " + fallbackMessages.Count + " translations from " + fallbackPropertiesFilePath);
+                Debug.Log("Loaded " + fallbackMessages.Count + " translations from " + fallbackPropertiesPath);
                 Debug.Log("Loaded " + currentLanguageMessages.Count + " translations from " + propertiesFilePath);
             }
 
@@ -219,7 +232,11 @@ namespace ProTrans
                 {
                     UpdateTranslationsRecursively(rootObject, translators);
                 }
-                Debug.Log($"Updated ITranslator instances in scene: {translators.Count}");
+
+                if (Instance != null && Instance.logInfo)
+                {
+                    Debug.Log($"Updated ITranslator instances in scene: {translators.Count}");
+                }
             }
         }
 
@@ -256,11 +273,12 @@ namespace ProTrans
             }
         }
 
-        private static string GetCountryCodeSuffixForPropertiesFile(SystemLanguage language)
+        private string GetCountryCodeSuffixForPropertiesFile(SystemLanguage language)
         {
             if (language != Instance.defaultPropertiesFileLanguage)
             {
-                return "_" + LanguageHelper.Get2LetterIsoCodeFromSystemLanguage(language, "en").ToLower();
+                string countryCode = LanguageHelper.Get2LetterIsoCodeFromSystemLanguage(language, null);
+                return countryCode != null ? ("_" +countryCode.ToLower()) : Instance.propertiesFileName;
             }
             else
             {
@@ -268,11 +286,9 @@ namespace ProTrans
             }
         }
 
-        protected virtual string GetPropertiesFilePath(string propertiesFileNameWithCountryCode)
+        protected virtual string GetPropertiesFilePathInResources(string propertiesFileNameWithCountryCode)
         {
-            string relativePath = propertiesFileFolder + "/" + propertiesFileNameWithCountryCode + "." + propertiesFileExtension;
-            string absolutePath = GetStreamingAssetsPath() + "/" + relativePath;
-            return absolutePath;
+            return propertiesFileFolderRelativeToProjectFolder.Replace("Assets/Resources/", "") + "/" + propertiesFileNameWithCountryCode;
         }
         
         /// Looks in the GameObject with the given tag
@@ -292,21 +308,10 @@ namespace ProTrans
             }
             return component;
         }
-        
-        private static string GetStreamingAssetsPath()
+
+        private static List<TEnum> GetEnumValuesAsList<TEnum>() where TEnum : Enum
         {
-    #if UNITY_ANDROID
-            if (extractStreamingAssetsOnAndroid)
-            {
-                return AndroidStreamingAssets.Path;
-            }
-            else
-            {
-                return Application.streamingAssetsPath;
-            }
-    #else
-            return Application.streamingAssetsPath;
-    #endif
+            return ((TEnum[])Enum.GetValues(typeof(TEnum))).ToList();
         }
         
         private void InitSingleInstance()

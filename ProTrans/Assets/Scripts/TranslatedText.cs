@@ -14,11 +14,6 @@ namespace ProTrans
 
         private Text uiText;
         
-        private void Start()
-        {
-            UpdateTranslation();
-        }
-
 #if UNITY_EDITOR
         private void Update()
         {

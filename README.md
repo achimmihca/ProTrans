@@ -11,19 +11,14 @@ Properties file translation for Unity3D
 
 ## Get the Code
 
-- This project uses [SharpZipLib](https://github.com/icsharpcode/SharpZipLib) (MIT license) to extract the StreamingAssets folder on Android.
-    - You could use the `download-dependencies.sh` script to download this library.
-    - If you don't build your project for Android, then you can safely delete the `AndroidStreamingAssets.cs` file and are not required to use SharpZipLib.
 - The relevant code of ProTrans is in `ProTrans/Assets/Scripts` and `ProTrans/Assets/Editor`. Copy these to your project.
 - Note that there is a [ProTrans.asmdef](https://docs.unity3d.com/Manual/cus-asmdef.html) file.
-    - You might need to reference this in your project.
-    - The asmdef has a dependency on `Plugins` to reference SharpZipLib.
-        - Again, if you don't build your project for Android, then you can safely remove the reference to `Plugins` from `ProTrans.asmdef`.
+    - You might need to reference this Assembly in your project.
 
 ## Prepare Translations
-- Create `Assets/StreamingAssets/Translations/messages.properties` in your project and add some key-value pairs (e.g. `sampleScene_helloWorld = Hello world!`).
-    - Note that ProTrans assumes translations to be placed in the [StreamingAssets](https://docs.unity3d.com/Manual/StreamingAssets.html) special Unity folder.
-        - The idea behind this is to allow users to create and test translations on their own.
+- Create `Assets/Resources/Translations/messages.properties` in your project and add some key-value pairs (e.g. `sampleScene_helloWorld = Hello world!`).
+    - Note that ProTrans assumes translations to be placed in the [Resources](https://docs.unity3d.com/Manual/SpecialFolders.html) special Unity folder.
+        - This is used to load translations at runtime without further configuration (e.g. when adding a new language).
     - Use an underscore and [two letter country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) suffix for different languages.
         - Example: `messages.properties` is the default (and fallback) language, `messages_de.properties` is for German translations, `messages_es.properties` is for Spanish translations
 

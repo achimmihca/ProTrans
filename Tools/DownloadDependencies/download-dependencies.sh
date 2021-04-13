@@ -1,2 +1,2 @@
 #!/bin/sh
-sh download-sharpziplib.sh
+# No dependencies yet

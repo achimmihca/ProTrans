@@ -15,7 +15,7 @@ namespace ProTrans
         /// countries.
         /// </summary>
         /// <returns>The 2-letter ISO code from system language.</returns>
-        public static string Get2LetterIsoCodeFromSystemLanguage(SystemLanguage lang, string fallbackValue)
+        public static string Get2LetterIsoCodeFromSystemLanguage(SystemLanguage lang, string fallbackValue = null)
         {
             switch (lang)
             {
@@ -25,7 +25,10 @@ namespace ProTrans
                 case SystemLanguage.Belarusian: return "BY";
                 case SystemLanguage.Bulgarian: return "BG";
                 case SystemLanguage.Catalan: return "CA";
-                case SystemLanguage.Chinese: return "ZH";
+                case SystemLanguage.Chinese:
+                case SystemLanguage.ChineseSimplified:
+                case SystemLanguage.ChineseTraditional:
+                    return "CN";
                 case SystemLanguage.Czech: return "CS";
                 case SystemLanguage.Danish: return "DA";
                 case SystemLanguage.Dutch: return "NL";
