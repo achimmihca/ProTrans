@@ -24,9 +24,9 @@ before_install:
   - chmod +x ./Tools/Travis/build.sh
   - chmod +x ./Tools/Travis/before_script.sh
   - chmod +x ./Tools/Travis/test.sh
-  - chmod +x ./Tools/download-dependencies/*.sh
+  - chmod +x ./Tools/DownloadDependencies/*.sh
   - export -f travis_fold
-  - (cd Tools/download-dependencies/; sh download-dependencies.sh)
+  - (cd Tools/DownloadDependencies/; sh download-dependencies.sh)
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker pull $IMAGE_NAME
 
