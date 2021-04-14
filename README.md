@@ -3,9 +3,7 @@ Properties file translation for Unity3D
 
 # Demo
 - Clone this repo
-- Navigate to `Tools/DownloadDependencies` and run `sh download-dependencies.sh` in your favorite shell
-    - On Windows you can use git-bash to run the `sh` command
-- Open the Unity project, and take a look at the sample scene.
+- Open the Unity project, and take a look at the sample scenes.
 
 # How to Use
 
@@ -25,7 +23,7 @@ Properties file translation for Unity3D
 ## Prepare the Scene
 - Place an instance of TranslationManager in your scene
 - Now it is possible to call TranslationManager.GetTranslation manually or implement ITranslator interface
-- The TranslationManager calls ITranslator.UpdateTranslation to translate scenes.
+- To translate a scene, the TranslationManager will call ITranslator.UpdateTranslation for every ITranslator instance in the scene.
 - ITranslator implementations should also call their own UpdateTranslation in Start().
     - See `TranslatedText.cs` for an example
 
@@ -42,7 +40,7 @@ However, ProTrans has some specifics.
 ## Encoding
 - Properties files for ProTrans should be encoded in UTF-8.
     - Note that this encoding differs from the encoding that properties files in Java typically use.
-    - Encoded unicode characters are not supported (e.g. `\u002c`). This also differs from properties files in Java.
+    - Encoded unicode characters are not supported (e.g. `\u002c`).
         - Instead, directly use the unescaped character in the UTF-8 encoded file.
 
 ## Syntax
