@@ -9,6 +9,6 @@ namespace ProTrans
             UpdateTranslation();
         }
         
-        abstract public void UpdateTranslation();
+        public abstract void UpdateTranslation();
     }
 }

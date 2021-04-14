@@ -17,10 +17,10 @@ namespace ProTrans
             instance = null;
             currentLanguageMessages?.Clear();
             fallbackMessages?.Clear();
+            translatedLanguages?.Clear();
         }
 
-        [Tooltip("Path that should be monitored by the FileSystemWatcher for modifications")]
-        public static string propertiesFileFolderRelativeToProjectFolder = "Assets/Resources/Translations";
+        public string propertiesFolderRelativeToResourcesFolder = "Translations";
         public string propertiesFileName = "messages";
 
         // Fields are static to be persisted across scenes
@@ -43,8 +43,10 @@ namespace ProTrans
         
         private static Dictionary<string, string> currentLanguageMessages = new Dictionary<string, string>();
         private static Dictionary<string, string> fallbackMessages = new Dictionary<string, string>();
+        private static List<SystemLanguage> translatedLanguages = new List<SystemLanguage>();
 
         public bool logInfo;
+        public bool useFallbackIfNotInCurrentLanguage = true;
         public SystemLanguage currentLanguage;
         public SystemLanguage defaultPropertiesFileLanguage = SystemLanguage.English;
         
@@ -64,7 +66,6 @@ namespace ProTrans
             }
         }
 
-    #if UNITY_EDITOR
         private void Update()
         {
             if (fallbackMessages.IsNullOrEmpty()
@@ -74,7 +75,6 @@ namespace ProTrans
                 UpdateCurrentLanguageAndTranslations();
             }
         }
-    #endif
 
         public List<string> GetKeys()
         {
@@ -83,22 +83,31 @@ namespace ProTrans
 
         public List<SystemLanguage> GetTranslatedLanguages()
         {
-            List<SystemLanguage> result = new List<SystemLanguage>();
-            foreach (SystemLanguage systemLanguage in GetEnumValuesAsList<SystemLanguage>())
+            if (translatedLanguages.IsNullOrEmpty())
             {
-                string suffix = GetCountryCodeSuffixForPropertiesFile(systemLanguage);
-                string propertiesFilePath = GetPropertiesFilePathInResources(propertiesFileName + suffix);
-                TextAsset textAsset = Resources.Load<TextAsset>(propertiesFilePath);
-                if (textAsset != null)
+                foreach (SystemLanguage systemLanguage in GetEnumValuesAsList<SystemLanguage>())
                 {
-                    result.Add(systemLanguage);
+                    string suffix = GetCountryCodeSuffixForPropertiesFile(systemLanguage);
+                    string propertiesFilePath = GetPropertiesFilePathInResources(propertiesFileName + suffix);
+                    TextAsset textAsset = Resources.Load<TextAsset>(propertiesFilePath);
+                    if (textAsset != null)
+                    {
+                        translatedLanguages.Add(systemLanguage);
+                    }
                 }
             }
-            return result;
+            return translatedLanguages;
         }
 
         public static string GetTranslation(string key, params object[] placeholderStrings)
         {
+            if (placeholderStrings == null
+                || placeholderStrings.Length == 0)
+            {
+                TryGetTranslation(key, out string translation);
+                return translation;
+            }
+            
             if (placeholderStrings.Length % 2 != 0)
             {
                 Debug.LogWarning($"Uneven number of placeholders for '{key}'. Format in array should be [key1, value1, key2, value2, ...]");
@@ -117,9 +126,15 @@ namespace ProTrans
 
         public static string GetTranslation(string key, Dictionary<string, string> placeholders)
         {
-            string translation = GetTranslation(key);
-            if (placeholders == null)
+            if (!TryGetActiveInstance(out TranslationManager translationManager))
             {
+                return key;
+            }
+
+            if (!TryGetTranslation(key, out string translation)
+                || placeholders == null)
+            {
+                // No proper translation found or no placeholders that should be replaced.  
                 return translation;
             }
             
@@ -138,47 +153,55 @@ namespace ProTrans
             return translation;
         }
 
-        public static string GetTranslation(string key)
+        private static bool TryGetTranslation(string key, out string translation)
         {
-            if (!Instance.gameObject.activeSelf)
+            if (!TryGetActiveInstance(out TranslationManager translationManager))
             {
-                // TranslationManager is deactivated. There are no translations.
-                return key;
+                translation = key;
+                return false;
             }
+            
             if (fallbackMessages.IsNullOrEmpty())
             {
-                Instance.UpdateCurrentLanguageAndTranslations();
-                // TranslationManager was deactivated. There are no translations.
-                if (!Instance.gameObject.activeSelf)
+                translationManager.UpdateCurrentLanguageAndTranslations();
+                // TranslationManager was deactivated during the attempt to update translations. There are no translations.
+                if (!translationManager.gameObject.activeSelf)
                 {
-                    return key;
+                    translation = key;
+                    return false;
                 }
             }
             
-            if (currentLanguageMessages.TryGetValue(key, out string translation))
+            if (currentLanguageMessages.TryGetValue(key, out string currentLanguageTranslation))
             {
-                return translation;
+                translation = currentLanguageTranslation;
+                return true;
             }
-            else
+            Debug.LogWarning($"Missing translation in language '{translationManager.currentLanguage}' for key '{key}'");
+            
+            if (fallbackMessages.TryGetValue(key, out string fallbackTranslation))
             {
-                Debug.LogWarning($"Missing translation in language '{Instance.currentLanguage}' for key '{key}'");
-                if (fallbackMessages.TryGetValue(key, out string fallbackTranslation))
+                if (translationManager.useFallbackIfNotInCurrentLanguage)
                 {
-                    return fallbackTranslation;
+                    translation = fallbackTranslation;
+                    return true;
                 }
-                else
-                {
-                    Debug.LogError($"No translation for key '{key}' in fallback language.");
-                    return key;
-                }
+                
+                translation = key;
+                return false;
             }
+            
+            Debug.LogError($"No translation for key '{key}' in fallback language.");
+            translation = key;
+            return false;
         }
 
         public void UpdateCurrentLanguageAndTranslations()
         {
             currentLanguageMessages = new Dictionary<string, string>();
             fallbackMessages = new Dictionary<string, string>();
-
+            translatedLanguages = new List<SystemLanguage>();
+            
             // Load the default properties file
             string fallbackPropertiesPath = GetPropertiesFilePathInResources(propertiesFileName);
             TextAsset fallbackPropertiesTextAsset = Resources.Load<TextAsset>(fallbackPropertiesPath);
@@ -218,10 +241,15 @@ namespace ProTrans
                 gameObject.SetActive(false);
                 return;
             }
+            else if (!gameObject.activeSelf)
+            {
+                Debug.Log("Found fallback translations. Activating TranslationManager", gameObject);
+                gameObject.SetActive(true);
+            }
             UpdateAllTranslationsInScene();
         }
 
-        private static void UpdateAllTranslationsInScene()
+        private void UpdateAllTranslationsInScene()
         {
             LinkedList<ITranslator> translators = new LinkedList<ITranslator>();
             Scene scene = SceneManager.GetActiveScene();
@@ -233,16 +261,16 @@ namespace ProTrans
                     UpdateTranslationsRecursively(rootObject, translators);
                 }
 
-                if (Instance != null && Instance.logInfo)
+                if (logInfo)
                 {
                     Debug.Log($"Updated ITranslator instances in scene: {translators.Count}");
                 }
             }
         }
 
-        private static void UpdateTranslationsRecursively(GameObject gameObject, LinkedList<ITranslator> translators)
+        private void UpdateTranslationsRecursively(GameObject localGameObject, LinkedList<ITranslator> translators)
         {
-            MonoBehaviour[] scripts = gameObject.GetComponents<MonoBehaviour>();
+            MonoBehaviour[] scripts = localGameObject.GetComponents<MonoBehaviour>();
             foreach (MonoBehaviour script in scripts)
             {
                 // The script can be null if it is a missing component.
@@ -258,7 +286,7 @@ namespace ProTrans
                 }
             }
 
-            foreach (Transform child in gameObject.transform)
+            foreach (Transform child in localGameObject.transform)
             {
                 UpdateTranslationsRecursively(child.gameObject, translators);
             }
@@ -275,10 +303,10 @@ namespace ProTrans
 
         private string GetCountryCodeSuffixForPropertiesFile(SystemLanguage language)
         {
-            if (language != Instance.defaultPropertiesFileLanguage)
+            if (language != defaultPropertiesFileLanguage)
             {
-                string countryCode = LanguageHelper.Get2LetterIsoCodeFromSystemLanguage(language, null);
-                return countryCode != null ? ("_" +countryCode.ToLower()) : Instance.propertiesFileName;
+                string countryCode = LanguageHelper.Get2LetterIsoCodeFromSystemLanguage(language);
+                return countryCode != null ? ("_" +countryCode.ToLower()) : propertiesFileName;
             }
             else
             {
@@ -288,7 +316,12 @@ namespace ProTrans
 
         protected virtual string GetPropertiesFilePathInResources(string propertiesFileNameWithCountryCode)
         {
-            return propertiesFileFolderRelativeToProjectFolder.Replace("Assets/Resources/", "") + "/" + propertiesFileNameWithCountryCode;
+            if (propertiesFolderRelativeToResourcesFolder.IsNullOrEmpty())
+            {
+                return propertiesFileNameWithCountryCode;
+            }
+            
+            return propertiesFolderRelativeToResourcesFolder + "/" + propertiesFileNameWithCountryCode;
         }
         
         /// Looks in the GameObject with the given tag
@@ -334,6 +367,13 @@ namespace ProTrans
             // Otherwise this object will be destroyed with its parent, even when DontDestroyOnLoad is used.
             transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
+        }
+
+        private static bool TryGetActiveInstance(out TranslationManager translationManager)
+        {
+            translationManager = Instance;
+            return translationManager != null
+                   && translationManager.gameObject.activeSelf;
         }
     }
 }

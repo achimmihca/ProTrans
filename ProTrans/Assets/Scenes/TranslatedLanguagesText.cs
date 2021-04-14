@@ -12,6 +12,12 @@ public class TranslatedLanguagesText : MonoBehaviour
     private void Start()
     {
         Text uiText = GetComponent<Text>();
+        if (TranslationManager.Instance == null)
+        {
+            uiText.text = "No TranslationManager";
+            return;
+        }
+        
         List<string> translatedLanguages = TranslationManager.Instance.GetTranslatedLanguages()
             .Select(systemLanguage => LanguageHelper.Get2LetterIsoCodeFromSystemLanguage(systemLanguage))
             .ToList();

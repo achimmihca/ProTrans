@@ -378,7 +378,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Hello Alice!
+  m_Text: Hola Alice!
 --- !u!222 &1075853463
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -607,7 +607,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: I am from New York. I am 100 years old.
+  m_Text: "Soy de New York. Tengo 100 a\xF1os."
 --- !u!222 &1129964786
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -645,9 +645,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9568d536d865a945b0c564a5a1c07c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  propertiesFolderRelativeToResourcesFolder: Translations
   propertiesFileName: messages
-  logInfo: 1
-  currentLanguage: 10
+  logInfo: 0
+  useFallbackIfNotInCurrentLanguage: 1
+  currentLanguage: 34
   defaultPropertiesFileLanguage: 10
 --- !u!4 &1184580282
 Transform:
@@ -988,7 +990,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Hello world!
+  m_Text: Hola mundo!
 --- !u!222 &1634371599
 CanvasRenderer:
   m_ObjectHideFlags: 0
