@@ -30,7 +30,7 @@ public class PropertiesFileAssetPostprocessor : AssetPostprocessor
                     {
                         Debug.Log("Reloading translations because of changed file: " + path);
                     }
-                    translationManager.UpdateCurrentLanguageAndTranslations();
+                    translationManager.ReloadTranslationsAndUpdateScene();
                     // Updating the translations once is enough, no matter how many properties files have changed.
                     return;
                 }

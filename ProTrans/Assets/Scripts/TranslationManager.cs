@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System.IO;
 using UnityEngine.SceneManagement;
 
 namespace ProTrans
@@ -47,11 +45,9 @@ namespace ProTrans
 
         public bool logInfo;
         public bool useFallbackIfNotInCurrentLanguage = true;
-        public SystemLanguage currentLanguage;
+        public SystemLanguage currentLanguage = SystemLanguage.English;
         public SystemLanguage defaultPropertiesFileLanguage = SystemLanguage.English;
         
-        private SystemLanguage lastLanguage;
-
         private void Awake()
         {
             InitSingleInstance();
@@ -62,17 +58,7 @@ namespace ProTrans
             
             if (fallbackMessages.IsNullOrEmpty())
             {
-                UpdateCurrentLanguageAndTranslations();
-            }
-        }
-
-        private void Update()
-        {
-            if (fallbackMessages.IsNullOrEmpty()
-                || lastLanguage != currentLanguage)
-            {
-                lastLanguage = currentLanguage;
-                UpdateCurrentLanguageAndTranslations();
+                ReloadTranslationsAndUpdateScene();
             }
         }
 
@@ -163,7 +149,7 @@ namespace ProTrans
             
             if (fallbackMessages.IsNullOrEmpty())
             {
-                translationManager.UpdateCurrentLanguageAndTranslations();
+                translationManager.ReloadTranslationsAndUpdateScene();
                 // TranslationManager was deactivated during the attempt to update translations. There are no translations.
                 if (!translationManager.gameObject.activeSelf)
                 {
@@ -171,13 +157,16 @@ namespace ProTrans
                     return false;
                 }
             }
-            
-            if (currentLanguageMessages.TryGetValue(key, out string currentLanguageTranslation))
+
+            if (translationManager.currentLanguage != translationManager.defaultPropertiesFileLanguage)
             {
-                translation = currentLanguageTranslation;
-                return true;
+                if (currentLanguageMessages.TryGetValue(key, out string currentLanguageTranslation))
+                {
+                    translation = currentLanguageTranslation;
+                    return true;
+                }
+                Debug.LogWarning($"Missing translation in language '{translationManager.currentLanguage}' for key '{key}'");
             }
-            Debug.LogWarning($"Missing translation in language '{translationManager.currentLanguage}' for key '{key}'");
             
             if (fallbackMessages.TryGetValue(key, out string fallbackTranslation))
             {
@@ -196,9 +185,27 @@ namespace ProTrans
             return false;
         }
 
-        public void UpdateCurrentLanguageAndTranslations()
+        public void ReloadTranslationsAndUpdateScene()
         {
-            currentLanguageMessages = new Dictionary<string, string>();
+            ReloadTranslations();
+            UpdateTranslatorsInScene();
+        }
+
+        private void ReloadTranslations()
+        {
+            if (!TryReloadFallbackLanguageTranslations())
+            {
+                return;
+            }
+
+            if (currentLanguage != defaultPropertiesFileLanguage)
+            {
+                TryReloadCurrentLanguageTranslations();
+            }
+        }
+
+        public bool TryReloadFallbackLanguageTranslations()
+        {
             fallbackMessages = new Dictionary<string, string>();
             translatedLanguages = new List<SystemLanguage>();
             
@@ -213,9 +220,34 @@ namespace ProTrans
             {
                 Debug.LogError($"Properties file for fallback language not found in any Resources folder: {fallbackPropertiesPath}. Deactivating TranslationManager.", gameObject);
                 gameObject.SetActive(false);
-                return;
+                return false;
+            }
+            
+            if (fallbackMessages.Count == 0)
+            {
+                Debug.LogError("No fallback translations found. Deactivating TranslationManager", gameObject);
+                gameObject.SetActive(false);
+                return false;
+            }
+            else if (!gameObject.activeSelf)
+            {
+                Debug.Log("Found fallback translations. Activating TranslationManager", gameObject);
+                gameObject.SetActive(true);
+            }
+            
+            if (logInfo)
+            {
+                Debug.Log("Loaded " + fallbackMessages.Count + " translations from " + fallbackPropertiesPath);
             }
 
+            return true;
+        }
+
+        public bool TryReloadCurrentLanguageTranslations()
+        {
+            currentLanguageMessages = new Dictionary<string, string>();
+            translatedLanguages = new List<SystemLanguage>();
+            
             // Load the properties file of the current language
             string propertiesFileNameWithCountryCode = propertiesFileName + GetCountryCodeSuffixForPropertiesFile(currentLanguage);
             string propertiesFilePath = GetPropertiesFilePathInResources(propertiesFileNameWithCountryCode);
@@ -227,29 +259,18 @@ namespace ProTrans
             else
             {
                 Debug.LogWarning($"Properties file for language {currentLanguage} not found in any Resources folder: {propertiesFilePath}", gameObject);
+                return false;
             }
 
             if (logInfo)
             {
-                Debug.Log("Loaded " + fallbackMessages.Count + " translations from " + fallbackPropertiesPath);
                 Debug.Log("Loaded " + currentLanguageMessages.Count + " translations from " + propertiesFilePath);
             }
 
-            if (fallbackMessages.Count == 0)
-            {
-                Debug.LogError("No fallback translations found. Deactivating TranslationManager", gameObject);
-                gameObject.SetActive(false);
-                return;
-            }
-            else if (!gameObject.activeSelf)
-            {
-                Debug.Log("Found fallback translations. Activating TranslationManager", gameObject);
-                gameObject.SetActive(true);
-            }
-            UpdateAllTranslationsInScene();
+            return true;
         }
 
-        private void UpdateAllTranslationsInScene()
+        public void UpdateTranslatorsInScene()
         {
             LinkedList<ITranslator> translators = new LinkedList<ITranslator>();
             Scene scene = SceneManager.GetActiveScene();

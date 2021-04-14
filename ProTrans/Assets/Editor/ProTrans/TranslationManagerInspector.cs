@@ -25,16 +25,20 @@ namespace ProTrans
             
             if (GUILayout.Button("Reload Translations"))
             {
-                UpdateCurrentLanguageAndTranslations(translationManager);
+                ReloadTranslationsAndUpdateScene(translationManager);
             }
 
             serializedObject.ApplyModifiedProperties();
         }
-
-        private void UpdateCurrentLanguageAndTranslations(TranslationManager translationManager)
+        
+        private void ReloadTranslationsAndUpdateScene(TranslationManager translationManager)
         {
-            translationManager.UpdateCurrentLanguageAndTranslations();
-            
+            translationManager.ReloadTranslationsAndUpdateScene();
+            MarkTranslatorsAsDirty();
+        }
+
+        private void MarkTranslatorsAsDirty()
+        {
             // Mark all GameObjects with ITranslator component as dirty. Otherwise Unity will not redraw the scene in the editor.
             foreach (GameObject gameObject in GameObject.FindObjectsOfType<GameObject>())
             {
@@ -69,7 +73,18 @@ namespace ProTrans
                 if (Enum.TryParse(translatedLanguages[newIndex], false, out SystemLanguage newLanguage))
                 {
                     translationManager.currentLanguage = newLanguage;
-                    UpdateCurrentLanguageAndTranslations(translationManager);
+                    if (translationManager.currentLanguage == translationManager.defaultPropertiesFileLanguage)
+                    {
+                        translationManager.TryReloadFallbackLanguageTranslations();
+                        translationManager.UpdateTranslatorsInScene();
+                        MarkTranslatorsAsDirty();
+                    }
+                    else
+                    {
+                        translationManager.TryReloadCurrentLanguageTranslations();
+                        translationManager.UpdateTranslatorsInScene();
+                        MarkTranslatorsAsDirty();
+                    }
                 }
                 else
                 {
