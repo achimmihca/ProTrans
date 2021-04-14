@@ -1,3 +1,7 @@
+
+[![Build Status](https://travis-ci.org/achimmihca/ProTrans.svg?branch=main)](https://travis-ci.org/achimmihca/ProTrans)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/achimmihca/ProTrans/blob/main/LICENSE)
+
 # ProTrans
 Properties file translation for Unity3D
 
