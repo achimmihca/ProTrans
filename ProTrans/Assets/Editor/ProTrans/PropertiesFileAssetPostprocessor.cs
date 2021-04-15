@@ -19,22 +19,57 @@ public class PropertiesFileAssetPostprocessor : AssetPostprocessor
             return;
         }
 
+        string currentLanguagePropertiesFileNameSuffix = translationManager.currentLanguage != translationManager.defaultPropertiesFileLanguage
+                ? "_" + LanguageHelper.Get2LetterIsoCodeFromSystemLanguage(translationManager.currentLanguage, "en").ToLowerInvariant()
+                : "";
+        string currentLanguagePropertiesFileName = translationManager.propertiesFileName + currentLanguagePropertiesFileNameSuffix + ".properties";
+        string fallbackLanguagePropertiesFileName = translationManager.propertiesFileName + ".properties";
+        
+        bool currentTranslationsUpdated = false;
+        bool fallbackTranslationsUpdated = false;
+        
         string[][] pathArrays = { importedAssets, deletedAssets, movedAssets };
         foreach (string[] pathArray in pathArrays)
         {
-            foreach (string path in importedAssets)
+            foreach (string path in pathArray)
             {
-                if (path.EndsWith(".properties"))
+                if (path.EndsWith(fallbackLanguagePropertiesFileName))
                 {
-                    if (translationManager.logInfo)
+                    if (translationManager.LogInfoNow)
                     {
-                        Debug.Log("Reloading translations because of changed file: " + path);
+                        Debug.Log("Reloading default language translations because of changed file: " + path);
                     }
-                    translationManager.ReloadTranslationsAndUpdateScene();
-                    // Updating the translations once is enough, no matter how many properties files have changed.
-                    return;
+                    translationManager.TryReloadFallbackLanguageTranslations();
+                    fallbackTranslationsUpdated = true;
+                }
+                else if (path.EndsWith(currentLanguagePropertiesFileName))
+                {
+                    if (translationManager.LogInfoNow)
+                    {
+                        Debug.Log("Reloading current language translations because of changed file: " + path);
+                    }
+                    translationManager.TryReloadCurrentLanguageTranslations();
+                    currentTranslationsUpdated = true;
+                }
+
+                if (currentTranslationsUpdated
+                    && fallbackTranslationsUpdated)
+                {
+                    // All languages have been updated already.
+                    break;
                 }
             }
+        }
+
+        if (currentTranslationsUpdated
+            || fallbackTranslationsUpdated)
+        {
+            translationManager.UpdateTranslatorsInScene();
+        }
+        if (translationManager.generateConstantsOnResourceChange
+            && fallbackTranslationsUpdated)
+        {
+            CreateTranslationConstantsMenuItems.CreateTranslationConstants();
         }
     }
 }

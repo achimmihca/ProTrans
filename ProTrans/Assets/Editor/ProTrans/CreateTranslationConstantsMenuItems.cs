@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ProTrans
 {
-    public static class CreateConstantsMenuItems
+    public static class CreateTranslationConstantsMenuItems
     {
         private static HashSet<string> cSharpKeywords = new HashSet<string> { "public", "protected", "private",
             "static", "void", "readonly", "const",
@@ -17,8 +17,6 @@ namespace ProTrans
             "null", "true", "false", "out", "ref",
             "get", "set", "if", "else", "while", "return", "do", "for", "foreach", "in", "continue" };
 
-        private static readonly string targetDirectory = "Assets/GeneratedScripts";
-        
         public static readonly string className = "R";
 
         private static readonly string indentation = "    ";
@@ -26,8 +24,15 @@ namespace ProTrans
         [MenuItem("Generate/Generate C# constants for translation properties")]
         public static void CreateTranslationConstants()
         {
+            TranslationManager translationManager = TranslationManager.Instance;
+            if (translationManager == null)
+            {
+                Debug.LogError("No TranslationManager found. Not creating properties file constants.");
+                return;
+            }
+            
             string subClassName = "String";
-            string targetPath = $"{targetDirectory}/{className + subClassName}.cs";
+            string targetPath = $"{translationManager.generatedConstantsFolder}/{className + subClassName}.cs";
 
             List<string> translationKeys = TranslationManager.Instance.GetKeys();
             if (translationKeys.IsNullOrEmpty())
@@ -38,9 +43,13 @@ namespace ProTrans
 
             translationKeys.Sort();
             string classCode = CreateClassCode(subClassName, translationKeys);
-            Directory.CreateDirectory(targetDirectory);
+            Directory.CreateDirectory(translationManager.generatedConstantsFolder);
             File.WriteAllText(targetPath, classCode, Encoding.UTF8);
-            Debug.Log("Generated file " + targetPath);
+            AssetDatabase.ImportAsset(targetPath);
+            if (translationManager.LogInfoNow)
+            {
+                Debug.Log("Generated file " + targetPath);
+            }
         }
 
         private static string CreateClassCode(string subClassName, List<string> constantValues, List<string> fieldNames = null)

@@ -18,9 +18,6 @@ namespace ProTrans
             translatedLanguages?.Clear();
         }
 
-        public string propertiesFolderRelativeToResourcesFolder = "Translations";
-        public string propertiesFileName = "messages";
-
         // Fields are static to be persisted across scenes
         private static TranslationManager instance;
         public static TranslationManager Instance
@@ -43,10 +40,22 @@ namespace ProTrans
         private static Dictionary<string, string> fallbackMessages = new Dictionary<string, string>();
         private static List<SystemLanguage> translatedLanguages = new List<SystemLanguage>();
 
-        public bool logInfo;
+        
+        public string propertiesFolderRelativeToResourcesFolder = "Translations";
+        public string propertiesFileName = "messages";
+        
+        public bool logInfoInEditMode;
+        public bool logInfoInPlayMode = true;
+        
+        public string generatedConstantsFolder = "Assets/GeneratedScripts";
+        public bool generateConstantsOnResourceChange;
+        
         public bool useFallbackIfNotInCurrentLanguage = true;
         public SystemLanguage currentLanguage = SystemLanguage.English;
         public SystemLanguage defaultPropertiesFileLanguage = SystemLanguage.English;
+        
+        public bool LogInfoNow => Application.isPlaying && logInfoInPlayMode 
+                                  || !Application.isPlaying && logInfoInEditMode;
         
         private void Awake()
         {
@@ -160,6 +169,15 @@ namespace ProTrans
 
             if (translationManager.currentLanguage != translationManager.defaultPropertiesFileLanguage)
             {
+                if (currentLanguageMessages.IsNullOrEmpty())
+                {
+                    if (!translationManager.TryReloadCurrentLanguageTranslations())
+                    {
+                        translation = key;
+                        return false;
+                    }
+                }
+                //
                 if (currentLanguageMessages.TryGetValue(key, out string currentLanguageTranslation))
                 {
                     translation = currentLanguageTranslation;
@@ -235,7 +253,7 @@ namespace ProTrans
                 gameObject.SetActive(true);
             }
             
-            if (logInfo)
+            if (LogInfoNow)
             {
                 Debug.Log("Loaded " + fallbackMessages.Count + " translations from " + fallbackPropertiesPath);
             }
@@ -262,7 +280,7 @@ namespace ProTrans
                 return false;
             }
 
-            if (logInfo)
+            if (LogInfoNow)
             {
                 Debug.Log("Loaded " + currentLanguageMessages.Count + " translations from " + propertiesFilePath);
             }
@@ -282,7 +300,7 @@ namespace ProTrans
                     UpdateTranslationsRecursively(rootObject, translators);
                 }
 
-                if (logInfo)
+                if (LogInfoNow)
                 {
                     Debug.Log($"Updated ITranslator instances in scene: {translators.Count}");
                 }

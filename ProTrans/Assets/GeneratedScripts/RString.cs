@@ -5,6 +5,7 @@ public static partial class R
     {
         public static readonly string sampleScene_helloName = "sampleScene_helloName";
         public static readonly string sampleScene_helloWorld = "sampleScene_helloWorld";
+        public static readonly string sampleScene_multiline = "sampleScene_multiline";
         public static readonly string sampleScene_staticMethodAccessExample = "sampleScene_staticMethodAccessExample";
     }
 }
