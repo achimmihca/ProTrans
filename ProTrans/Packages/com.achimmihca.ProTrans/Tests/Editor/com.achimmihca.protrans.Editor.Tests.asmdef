@@ -1,0 +1,21 @@
+{
+    "name": "com.achimmihca.protrans.Editor.Tests",
+    "references": [
+		"com.achimmihca.protrans",
+		"com.achimmihca.protrans.Editor"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

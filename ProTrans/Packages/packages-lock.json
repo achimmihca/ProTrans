@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.achimmihca.protrans": {
+      "version": "file:com.achimmihca.ProTrans",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.2d.animation": {
       "version": "5.0.3",
       "depth": 0,

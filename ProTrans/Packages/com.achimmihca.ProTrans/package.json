@@ -1,0 +1,27 @@
+{
+    "name": "com.achimmihca.protrans",
+    "version": "0.1.0",
+    "displayName": "ProTrans",
+    "description": "Get strings for different languages from properties files",
+    "dependencies": {
+    },
+   "keywords": [
+      "translation",
+      "localization",
+      "i18n",
+      "l10n",
+      "properties"
+    ],
+    "author": {
+      "name": "Andreas Stange",
+      "email": "anst.dev@gmail.com",
+      "url": "https://github.com/achimmihca/ProTrans"
+    },
+	"samples": [
+    {
+     "displayName": "Sample1",
+     "description": "Properties files, and TranslationManager in two simple scenes that use Unity's component based UI",
+     "path": "Samples~/SampleFolder1"
+    }]
+}
+  

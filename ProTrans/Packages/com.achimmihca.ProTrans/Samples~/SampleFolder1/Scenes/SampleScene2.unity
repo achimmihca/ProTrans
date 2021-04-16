@@ -175,7 +175,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7897801e676d7a44a68f0f820309060, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetScene: Scenes/SampleScene
+  targetScene: Samples/ProTrans/0.1.0/Sample1/Scenes/SampleScene1
 --- !u!114 &735492961
 MonoBehaviour:
   m_ObjectHideFlags: 0

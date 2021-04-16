@@ -297,7 +297,7 @@ namespace ProTrans
                 GameObject[] rootObjects = scene.GetRootGameObjects();
                 foreach (GameObject rootObject in rootObjects)
                 {
-                    UpdateTranslationsRecursively(rootObject, translators);
+                    UpdateTranslatorsRecursively(rootObject, translators);
                 }
 
                 if (LogInfoNow)
@@ -307,7 +307,7 @@ namespace ProTrans
             }
         }
 
-        private void UpdateTranslationsRecursively(GameObject localGameObject, LinkedList<ITranslator> translators)
+        private void UpdateTranslatorsRecursively(GameObject localGameObject, LinkedList<ITranslator> translators)
         {
             MonoBehaviour[] scripts = localGameObject.GetComponents<MonoBehaviour>();
             foreach (MonoBehaviour script in scripts)
@@ -327,7 +327,7 @@ namespace ProTrans
 
             foreach (Transform child in localGameObject.transform)
             {
-                UpdateTranslationsRecursively(child.gameObject, translators);
+                UpdateTranslatorsRecursively(child.gameObject, translators);
             }
         }
 
