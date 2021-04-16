@@ -47,7 +47,7 @@ MonoBehaviour:
   propertiesFileName: messages
   logInfoInEditMode: 1
   logInfoInPlayMode: 1
-  generatedConstantsFolder: Assets/Samples/ProTrans/0.1.0/Sample1/Scenes/GeneratedScripts
+  generatedConstantsFolder: Assets/Samples/ProTrans/1.0.0/Sample1/Scenes/GeneratedScripts
   generateConstantsOnResourceChange: 1
   useFallbackIfNotInCurrentLanguage: 1
   currentLanguage: 34

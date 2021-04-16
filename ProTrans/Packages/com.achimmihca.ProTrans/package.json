@@ -1,6 +1,6 @@
 {
     "name": "com.achimmihca.protrans",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "displayName": "ProTrans",
     "description": "Get strings for different languages from properties files",
     "dependencies": {
