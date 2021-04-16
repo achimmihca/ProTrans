@@ -9,7 +9,7 @@ namespace ProTrans
         [Test]
         public void DoPropertiesFileParserTest()
         {
-            string filePath = "Assets/Editor/Test/TestProperties.properties";
+            string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties.properties";
             Dictionary<string, string> properties = PropertiesFileParser.ParseFile(filePath);
 
             bool containsComment = AnyKeyToLowerContains(properties, "comment")
