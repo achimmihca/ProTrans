@@ -13,9 +13,10 @@ Properties file translation for Unity3D
 
 ## Get the Code
 
-- The relevant code of ProTrans is in `ProTrans/Assets/Scripts` and `ProTrans/Assets/Editor`. Copy these to your project.
-- Note that there is a [ProTrans.asmdef](https://docs.unity3d.com/Manual/cus-asmdef.html) file.
-    - You might need to reference this Assembly in your project.
+- You can add a dependency in `Packages/manifest.json` in the following form:
+  `com.achimmihca.protrans": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans#v1.0.0"`
+    - Note that `#v1.0.0` specifies a tag of this git repository. Remove this part to use the latest (possibly unstable) version.
+    - Note further that the path parameter (`?path=...`) points to the folder in this git repository, where the Unity package is placed.
 
 ## Prepare Translations
 - Create `Assets/Resources/Translations/messages.properties` in your project and add some key-value pairs (e.g. `sampleScene_helloWorld = Hello world!`).
@@ -25,7 +26,9 @@ Properties file translation for Unity3D
         - Example: `messages.properties` is the default (and fallback) language, `messages_de.properties` is for German translations, `messages_es.properties` is for Spanish translations
 
 ## Prepare the Scene
+- Create a new tag "TranslationManager"
 - Place an instance of TranslationManager in your scene
+    - Add the "TranslationManager" tag to this instance
 - Now it is possible to call TranslationManager.GetTranslation manually or implement ITranslator interface
 - To translate a scene, the TranslationManager will call ITranslator.UpdateTranslation for every ITranslator instance in the scene.
 - ITranslator implementations should also call their own UpdateTranslation in Start().
