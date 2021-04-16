@@ -57,7 +57,7 @@ namespace ProTrans
         public bool LogInfoNow => Application.isPlaying && logInfoInPlayMode 
                                   || !Application.isPlaying && logInfoInEditMode;
         
-        private void Awake()
+        protected virtual void Awake()
         {
             InitSingleInstance();
             if (instance != this)
@@ -71,12 +71,12 @@ namespace ProTrans
             }
         }
 
-        public List<string> GetKeys()
+        public virtual List<string> GetKeys()
         {
             return fallbackMessages.Keys.ToList();
         }
 
-        public List<SystemLanguage> GetTranslatedLanguages()
+        public virtual List<SystemLanguage> GetTranslatedLanguages()
         {
             if (translatedLanguages.IsNullOrEmpty())
             {
@@ -177,7 +177,7 @@ namespace ProTrans
                         return false;
                     }
                 }
-                //
+                
                 if (currentLanguageMessages.TryGetValue(key, out string currentLanguageTranslation))
                 {
                     translation = currentLanguageTranslation;
@@ -222,7 +222,7 @@ namespace ProTrans
             }
         }
 
-        public bool TryReloadFallbackLanguageTranslations()
+        public virtual bool TryReloadFallbackLanguageTranslations()
         {
             fallbackMessages = new Dictionary<string, string>();
             translatedLanguages = new List<SystemLanguage>();
@@ -261,7 +261,7 @@ namespace ProTrans
             return true;
         }
 
-        public bool TryReloadCurrentLanguageTranslations()
+        public virtual bool TryReloadCurrentLanguageTranslations()
         {
             currentLanguageMessages = new Dictionary<string, string>();
             translatedLanguages = new List<SystemLanguage>();
@@ -288,7 +288,7 @@ namespace ProTrans
             return true;
         }
 
-        public void UpdateTranslatorsInScene()
+        public virtual void UpdateTranslatorsInScene()
         {
             LinkedList<ITranslator> translators = new LinkedList<ITranslator>();
             Scene scene = SceneManager.GetActiveScene();
