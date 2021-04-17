@@ -17,6 +17,7 @@ namespace ProTrans
             currentLanguageMessages?.Clear();
             fallbackMessages?.Clear();
             translatedLanguages?.Clear();
+            loggedMissingTranslations?.Clear();
         }
 
         // Fields are static to be persisted across scenes
@@ -40,7 +41,9 @@ namespace ProTrans
         private static Dictionary<string, string> currentLanguageMessages = new Dictionary<string, string>();
         private static Dictionary<string, string> fallbackMessages = new Dictionary<string, string>();
         private static List<SystemLanguage> translatedLanguages = new List<SystemLanguage>();
-
+        
+        // Stores already logged missing translations. Missing translations should only be logged once.
+        private static HashSet<string> loggedMissingTranslations = new HashSet<string>();
         
         public string propertiesFolderRelativeToResourcesFolder = "Translations";
         public string propertiesFileName = "messages";
@@ -152,7 +155,10 @@ namespace ProTrans
                 }
                 else
                 {
-                    Debug.LogWarning($"Translation for {key} is missing placeholder {placeholderText}.");
+                    SystemLanguage propertiesFileLanguage = translationManager.currentLanguage != translationManager.defaultPropertiesFileLanguage
+                        ? translationManager.currentLanguage
+                        : translationManager.defaultPropertiesFileLanguage;
+                    translationManager.LogMissingPlaceholder(propertiesFileLanguage, key, placeholder.Key);
                 }
             }
             return translation;
@@ -183,7 +189,7 @@ namespace ProTrans
                     translation = currentLanguageTranslation;
                     return true;
                 }
-                Debug.LogWarning($"Missing translation in language '{translationManager.currentLanguage}' for key '{key}'");
+                translationManager.LogMissingTranslation(translationManager.currentLanguage, key);
             }
             
             // Use translation from default properties.
@@ -199,7 +205,7 @@ namespace ProTrans
             }
             
             if (fallbackMessages.TryGetValue(key, out string fallbackTranslation))
-            {
+            {   
                 if (translationManager.useFallbackIfNotInCurrentLanguage)
                 {
                     translation = fallbackTranslation;
@@ -210,7 +216,7 @@ namespace ProTrans
                 return false;
             }
             
-            Debug.LogError($"No translation for key '{key}' in fallback language.");
+            translationManager.LogMissingTranslation(translationManager.defaultPropertiesFileLanguage, key);
             translation = key;
             return false;
         }
@@ -437,6 +443,37 @@ namespace ProTrans
             translationManager = Instance;
             return translationManager != null
                    && translationManager.gameObject.activeSelf;
+        }
+
+        private void LogMissingTranslation(SystemLanguage systemLanguage, string key)
+        {
+            string loggingKey = systemLanguage + ":" + key;
+            if (Application.isPlaying
+                && loggedMissingTranslations.Contains(loggingKey))
+            {
+                return;
+            }
+            loggedMissingTranslations.Add(loggingKey);
+            Debug.LogWarning($"Missing translation in language '{systemLanguage}' for key '{key}'");
+        }
+
+        private void LogMissingPlaceholder(SystemLanguage systemLanguage, string key, string placeholderKey)
+        {
+            string loggingKey = systemLanguage + ":" + key + ":" + placeholderKey;
+            if (Application.isPlaying
+                && loggedMissingTranslations.Contains(loggingKey))
+            {
+                return;
+            }
+            loggedMissingTranslations.Add(loggingKey);
+            Debug.LogWarning($"Translation for '{key}' in language '{systemLanguage}' is missing placeholder '{placeholderKey}'.");
+        }
+
+        protected virtual void OnApplicationQuit()
+        {
+            // When changing from play-mode to edit-mode, reset translations.
+            ClearCurrentLanguageTranslations();
+            ClearFallbackLanguageTranslations();
         }
     }
 }

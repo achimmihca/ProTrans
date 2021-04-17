@@ -45,7 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   propertiesFolderRelativeToResourcesFolder: Translations
   propertiesFileName: messages
-  logInfoInEditMode: 1
+  logInfoInEditMode: 0
   logInfoInPlayMode: 1
   generatedConstantsFolder: Assets/Samples/ProTrans/1.0.0/Sample1/Scenes/GeneratedScripts
   generateConstantsOnResourceChange: 1
