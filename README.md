@@ -5,6 +5,14 @@
 # ProTrans
 Properties file translation for Unity3D
 
+## Features
+- Get strings for different languages from UTF-8 encoded properties files that are placed in a "Resources" folder
+- Reload translations and update scene on resource change
+- Optionally, generate constants for the translation keys
+- Get languages with existing translations
+- Separate logging configuration for play-mode and edit-mode
+- Log missing translations and placeholders only once when in play-mode
+
 # Demo
 - Clone this repo
 - Open the Unity project, and take a look at the sample scenes.
