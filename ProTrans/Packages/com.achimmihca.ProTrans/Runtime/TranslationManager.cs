@@ -38,12 +38,12 @@ namespace ProTrans
             }
         }
         
-        private static Dictionary<string, string> currentLanguageMessages = new Dictionary<string, string>();
-        private static Dictionary<string, string> fallbackMessages = new Dictionary<string, string>();
-        private static List<SystemLanguage> translatedLanguages = new List<SystemLanguage>();
+        protected static Dictionary<string, string> currentLanguageMessages = new Dictionary<string, string>();
+        protected static Dictionary<string, string> fallbackMessages = new Dictionary<string, string>();
+        protected static List<SystemLanguage> translatedLanguages = new List<SystemLanguage>();
         
         // Stores already logged missing translations. Missing translations should only be logged once.
-        private static HashSet<string> loggedMissingTranslations = new HashSet<string>();
+        protected static HashSet<string> loggedMissingTranslations = new HashSet<string>();
         
         public string propertiesFolderRelativeToResourcesFolder = "Translations";
         public string propertiesFileName = "messages";
