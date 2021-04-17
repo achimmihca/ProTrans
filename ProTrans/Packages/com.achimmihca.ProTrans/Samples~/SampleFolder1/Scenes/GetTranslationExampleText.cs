@@ -18,7 +18,7 @@ public class GetTranslationExampleText : AbstractTranslatorBehaviour
         // The path to the generated resources folder is specified in the TranslationManager.
         
         // After the translation key, further arguments can be given in the form [key1, value1, key2, value2, ...].
-        GetComponent<Text>().text = TranslationManager.GetTranslation(R.String.sampleScene_staticMethodAccessExample,
+        GetComponent<Text>().text = TranslationManager.GetTranslation(R.Messages.sampleScene_staticMethodAccessExample,
             "city", city,
             "age", age);
     }

@@ -75,13 +75,13 @@ namespace ProTrans
                     translationManager.currentLanguage = newLanguage;
                     if (translationManager.currentLanguage == translationManager.defaultPropertiesFileLanguage)
                     {
-                        translationManager.TryReloadFallbackLanguageTranslations();
+                        translationManager.ClearFallbackLanguageTranslations();
                         translationManager.UpdateTranslatorsInScene();
                         MarkTranslatorsAsDirty();
                     }
                     else
                     {
-                        translationManager.TryReloadCurrentLanguageTranslations();
+                        translationManager.ClearCurrentLanguageTranslations();
                         translationManager.UpdateTranslatorsInScene();
                         MarkTranslatorsAsDirty();
                     }

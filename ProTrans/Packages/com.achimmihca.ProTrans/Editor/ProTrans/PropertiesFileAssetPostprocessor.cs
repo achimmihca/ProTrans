@@ -39,7 +39,7 @@ public class PropertiesFileAssetPostprocessor : AssetPostprocessor
                     {
                         Debug.Log("Reloading default language translations because of changed file: " + path);
                     }
-                    translationManager.TryReloadFallbackLanguageTranslations();
+                    translationManager.ClearFallbackLanguageTranslations();
                     fallbackTranslationsUpdated = true;
                 }
                 else if (path.EndsWith(currentLanguagePropertiesFileName))
@@ -48,7 +48,7 @@ public class PropertiesFileAssetPostprocessor : AssetPostprocessor
                     {
                         Debug.Log("Reloading current language translations because of changed file: " + path);
                     }
-                    translationManager.TryReloadCurrentLanguageTranslations();
+                    translationManager.ClearCurrentLanguageTranslations();
                     currentTranslationsUpdated = true;
                 }
 

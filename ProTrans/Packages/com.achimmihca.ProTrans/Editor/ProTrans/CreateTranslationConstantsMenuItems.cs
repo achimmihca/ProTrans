@@ -31,10 +31,10 @@ namespace ProTrans
                 return;
             }
             
-            string subClassName = "String";
+            string subClassName = ToUpperInvariantFirstCharacter(translationManager.propertiesFileName);
             string targetPath = $"{translationManager.generatedConstantsFolder}/{className + subClassName}.cs";
 
-            List<string> translationKeys = TranslationManager.Instance.GetKeys();
+            List<string> translationKeys = translationManager.GetKeys();
             if (translationKeys.IsNullOrEmpty())
             {
                 Debug.LogWarning("No translation keys found.");
@@ -86,6 +86,15 @@ namespace ProTrans
                 sb.Append(indentation);
                 sb.AppendLine($"public static readonly string {fieldName} = \"{value}\";");
             }
+        }
+        
+        private static string ToUpperInvariantFirstCharacter(string s)
+        {
+            if (s.IsNullOrEmpty())
+            {
+                return string.Empty;
+            }
+            return char.ToUpperInvariant(s[0]) + s.Substring(1);
         }
     }
 }

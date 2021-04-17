@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -73,7 +74,16 @@ namespace ProTrans
 
         public virtual List<string> GetKeys()
         {
-            return fallbackMessages.Keys.ToList();
+            string fallbackPropertiesPath = GetPropertiesFilePathInResources(propertiesFileName);
+            TextAsset fallbackPropertiesTextAsset = Resources.Load<TextAsset>(fallbackPropertiesPath);
+            if (fallbackPropertiesTextAsset == null)
+            {
+                return new List<string>();
+            }
+
+            Dictionary<string, string> properties = new Dictionary<string, string>();
+            LoadPropertiesFromText(fallbackPropertiesTextAsset.text, properties);
+            return properties.Keys.ToList();
         }
 
         public virtual List<SystemLanguage> GetTranslatedLanguages()
@@ -156,17 +166,7 @@ namespace ProTrans
                 return false;
             }
             
-            if (fallbackMessages.IsNullOrEmpty())
-            {
-                translationManager.ReloadTranslationsAndUpdateScene();
-                // TranslationManager was deactivated during the attempt to update translations. There are no translations.
-                if (!translationManager.gameObject.activeSelf)
-                {
-                    translation = key;
-                    return false;
-                }
-            }
-
+            // Try use translation from current language properties.
             if (translationManager.currentLanguage != translationManager.defaultPropertiesFileLanguage)
             {
                 if (currentLanguageMessages.IsNullOrEmpty())
@@ -184,6 +184,18 @@ namespace ProTrans
                     return true;
                 }
                 Debug.LogWarning($"Missing translation in language '{translationManager.currentLanguage}' for key '{key}'");
+            }
+            
+            // Use translation from default properties.
+            if (fallbackMessages.IsNullOrEmpty())
+            {
+                translationManager.ReloadTranslationsAndUpdateScene();
+                // TranslationManager was deactivated during the attempt to update translations. There are no translations.
+                if (!translationManager.gameObject.activeSelf)
+                {
+                    translation = key;
+                    return false;
+                }
             }
             
             if (fallbackMessages.TryGetValue(key, out string fallbackTranslation))
@@ -222,7 +234,7 @@ namespace ProTrans
             }
         }
 
-        public virtual bool TryReloadFallbackLanguageTranslations()
+        protected virtual bool TryReloadFallbackLanguageTranslations()
         {
             fallbackMessages = new Dictionary<string, string>();
             translatedLanguages = new List<SystemLanguage>();
@@ -261,7 +273,7 @@ namespace ProTrans
             return true;
         }
 
-        public virtual bool TryReloadCurrentLanguageTranslations()
+        protected virtual bool TryReloadCurrentLanguageTranslations()
         {
             currentLanguageMessages = new Dictionary<string, string>();
             translatedLanguages = new List<SystemLanguage>();
@@ -287,7 +299,19 @@ namespace ProTrans
 
             return true;
         }
-
+        
+        public void ClearFallbackLanguageTranslations()
+        {
+            fallbackMessages.Clear();
+            translatedLanguages.Clear();
+        }
+        
+        public void ClearCurrentLanguageTranslations()
+        {
+            currentLanguageMessages.Clear();
+            translatedLanguages.Clear();
+        }
+        
         public virtual void UpdateTranslatorsInScene()
         {
             LinkedList<ITranslator> translators = new LinkedList<ITranslator>();
