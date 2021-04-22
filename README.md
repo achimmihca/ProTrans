@@ -19,12 +19,11 @@ Properties file translation for Unity3D
 
 # How to Use
 
-## Get the Code
-
-- You can add a dependency in `Packages/manifest.json` in the following form:
-  `com.achimmihca.protrans": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans#v1.0.0"`
-    - Note that `#v1.0.0` specifies a tag of this git repository. Remove this part to use the latest (possibly unstable) version.
-    - Note further that the path parameter (`?path=...`) points to the folder in this git repository, where the Unity package is placed.
+## Get the Package
+- You can add a dependency to your `Packages/manifest.json` using a [Git URL](https://docs.unity3d.com/Documentation/Manual/upm-git.html) in the following form:
+  `"com.achimmihca.protrans": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans#v1.0.0"`
+    - Note that `#v1.0.0` can be used to specify a tag or commit hash.
+- This package ships with a sample that can be imported to your project using Unity's Package Manager.
 
 ## Prepare Translations
 - Create `Assets/Resources/Translations/messages.properties` in your project and add some key-value pairs (e.g. `sampleScene_helloWorld = Hello world!`).
@@ -48,7 +47,6 @@ Properties file translation for Unity3D
     - Example: `TranslationManager.GetTranslation(R.String.sampleScene_helloWorld)`
 
 # Properties Files in ProTrans
-
 Properties files are a standard in the Java world.
 However, ProTrans has some specifics.
 
