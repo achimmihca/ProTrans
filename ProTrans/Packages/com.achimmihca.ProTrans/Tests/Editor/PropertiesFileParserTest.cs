@@ -17,6 +17,7 @@ namespace ProTrans
             Assert.That(!containsComment, "Contains comment in key or value");
             
             AssertPropertyIgnoreCase(properties, "test_helloWorld", "Hello world!");
+            AssertPropertyIgnoreCase(properties, "test_equals", "before=after");
             AssertPropertyIgnoreCase(properties, "test_parameters", "First name: {firstName}, second name: {secondName}");
             AssertPropertyIgnoreCase(properties, "test_nonAscii", "üäößêéèáà");
             AssertPropertyIgnoreCase(properties, "test_quotes", "\"All these outer and 'single quotes' and \"double quotes\" are kept\"");
