@@ -103,7 +103,6 @@ namespace ProTrans
                 string nextLine = stringReader.ReadLine();
                 if (nextLine != null)
                 {
-                    sb.Append("\n");
                     ParseEscapedCharacters(nextLine.TrimStart(), sb, stringReader);
                 }
             }

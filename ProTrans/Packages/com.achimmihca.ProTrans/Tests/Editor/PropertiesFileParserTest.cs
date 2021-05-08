@@ -25,8 +25,8 @@ namespace ProTrans
             AssertPropertyIgnoreCase(properties, "test_tab", "Before tab\tafter tab");
             AssertPropertyIgnoreCase(properties, "test_newline", "First line\nAfter newline\rAfter carriage return");
             AssertPropertyIgnoreCase(properties, "test_backslash", "\\Just two backslashes\\");
-            AssertPropertyIgnoreCase(properties, "test_escapeNewline", "First line with backslash at the end\\\nSecond line\nThird line\nFourth line");
-            AssertPropertyIgnoreCase(properties, "test_escapeNewlineQuoteKeepSpace", " First line \n Second line ");
+            AssertPropertyIgnoreCase(properties, "test_targetCities", "Detroit,Chicago,Los Angeles");
+            AssertPropertyIgnoreCase(properties, "test_KeepSpace", " <- white-space -> ");
         }
 
         private static bool AnyKeyToLowerContains(Dictionary<string, string> properties, string substring)
