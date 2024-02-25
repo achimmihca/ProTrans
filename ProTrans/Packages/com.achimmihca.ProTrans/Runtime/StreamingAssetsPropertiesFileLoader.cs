@@ -31,7 +31,7 @@ namespace ProTrans
             {
                 throw new TransactionException($"No base properties file found: {path}");
             }
-            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(path);
+            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(path, TranslationConfig.Singleton.DefaultCultureInfo);
 
             basePropertiesFileCache = propertiesFile;
             return propertiesFile;
@@ -52,11 +52,10 @@ namespace ProTrans
             string path = GetFullPathInStreamingAssets(cultureInfo);
             if (!File.Exists(path))
             {
-                CultureInfo fallbackCultureInfo = GetFallbackCultureInfo(cultureInfo);
-                return GetPropertiesFile(fallbackCultureInfo);
+                return null;
             }
 
-            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(path);
+            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(path, TranslationConfig.Singleton.DefaultCultureInfo);
 
             cultureInfoToPropertiesFileCache[cultureInfo] = propertiesFile;
             return propertiesFile;
@@ -82,7 +81,7 @@ namespace ProTrans
         private static string GetFullPathInStreamingAssets(CultureInfo cultureInfo)
         {
             string languageAndRegionSuffix = PropertiesFileParser.GetLanguageAndRegionSuffix(cultureInfo);
-            return $"{Application.streamingAssetsPath}/{FolderInStreamingAssets}/{PropertiesFileBaseName}{languageAndRegionSuffix}";
+            return $"{Application.streamingAssetsPath}/{FolderInStreamingAssets}/{PropertiesFileBaseName}{languageAndRegionSuffix}.properties";
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using NUnit.Framework;
 
 namespace ProTrans
@@ -10,7 +11,7 @@ namespace ProTrans
         public void DoPropertiesFileParserTest()
         {
             string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties.properties";
-            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(filePath);
+            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(filePath, new CultureInfo("en"));
 
             bool containsComment = AnyKeyToLowerContains(propertiesFile, "comment")
                                    || AnyValueToLowerContains(propertiesFile, "comment");

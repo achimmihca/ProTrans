@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace ProTrans
@@ -7,12 +9,37 @@ namespace ProTrans
     {
         internal static List<CultureInfo> GetTranslatedCultureInfos()
         {
-            return new List<CultureInfo>();
-        }
+            List<CultureInfo> result = new List<CultureInfo>();
 
-        internal static string Get(string key)
-        {
-            return key;
+            PropertiesFile defaultPropertiesFile = TranslationConfig.Singleton.PropertiesFileGetter(null);
+            if (defaultPropertiesFile != null)
+            {
+                result.Add(TranslationConfig.Singleton.DefaultCultureInfo);
+            }
+
+            CultureInfo[] allCultureInfos = CultureInfo.GetCultures(CultureTypes.AllCultures);
+            foreach (CultureInfo cultureInfo in allCultureInfos)
+            {
+                if (string.IsNullOrEmpty(cultureInfo.ToString()))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    PropertiesFile propertiesFile = TranslationConfig.Singleton.PropertiesFileGetter(cultureInfo);
+                    if (propertiesFile != null)
+                    {
+                        result.Add(cultureInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogUtils.Log(LogLevel.Error, () => $"Failed to load properties file for CultureInfo {cultureInfo.ToString()}: {ex.Message}", ex);
+                }
+            }
+
+            return result;
         }
 
         internal static string Get(string key, params object[] placeholderStrings)
@@ -23,19 +50,30 @@ namespace ProTrans
 
         internal static string Get(string key, Dictionary<string, string> placeholders)
         {
-            if (!TryGet(key, placeholders, out string translation)
-                || placeholders == null)
-            {
-                // No proper translation found or no placeholders that should be replaced.
-                return translation;
-            }
-
-            return ReplacePlaceholders(translation, placeholders);
+            TryGet(TranslationConfig.Singleton.CurrentCultureInfo, key, placeholders, out string translation);
+            return translation;
         }
 
-        internal static bool TryGet(string key, Dictionary<string,string> placeholders, out string translation)
+        internal static bool TryGet(CultureInfo cultureInfo, string key, Dictionary<string,string> placeholders, out string translation)
         {
-            translation = "";
+            PropertiesFile propertiesFile = TranslationConfig.Singleton.PropertiesFileGetter(cultureInfo);
+            if (propertiesFile != null
+                && propertiesFile.TryGetValue(key, out translation))
+            {
+                translation = ReplacePlaceholders(translation, placeholders);
+                return true;
+            }
+
+            if (cultureInfo != null)
+            {
+                CultureInfo fallbackCultureInfo = TranslationConfig.Singleton.FallbackCultureInfoGetter(cultureInfo);
+                if (!Equals(fallbackCultureInfo, cultureInfo))
+                {
+                    return TryGet(fallbackCultureInfo, key, placeholders, out translation);
+                }
+            }
+
+            translation = key;
             return false;
         }
 
@@ -47,9 +85,25 @@ namespace ProTrans
                 return null;
             }
 
+            if (placeholderStrings.Length == 1
+                && placeholderStrings[0] is IList list)
+            {
+                if (list.Count <= 0)
+                {
+                    return null;
+                }
+
+                List<object> objects = new List<object>(list.Count);
+                foreach (object o in list)
+                {
+                    objects.Add(o);
+                }
+                return CreatePlaceholderDictionary(key, objects.ToArray());
+            }
+
             if (placeholderStrings.Length % 2 != 0)
             {
-                LogUtils.Log(LogLevel.Warning, () => $"Uneven number of placeholders for '{key}'. Format in array should be [key1, value1, key2, value2, ...]");
+                LogUtils.Log(LogLevel.Warning, () => $"Uneven number of placeholders for key '{key}'. Format in array should be [key1, value1, key2, value2, ...]");
             }
 
             Dictionary<string, string> placeholders = new Dictionary<string, string>();

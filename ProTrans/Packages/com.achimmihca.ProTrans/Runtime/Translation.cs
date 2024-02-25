@@ -23,10 +23,10 @@ namespace ProTrans
 
         public static bool TryGet(string key, Dictionary<string, string> placeholders)
         {
-            return TranslationUtils.TryGet(key, placeholders, out string translation);
+            return TranslationUtils.TryGet(TranslationConfig.Singleton.CurrentCultureInfo, key, placeholders, out string translation);
         }
 
-        public static List<CultureInfo> GetTranslatedLanguages()
+        public static List<CultureInfo> GetTranslatedCultureInfos()
         {
             return TranslationUtils.GetTranslatedCultureInfos();
         }

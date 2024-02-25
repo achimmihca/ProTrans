@@ -10,23 +10,38 @@ namespace ProTrans
     {
         private static readonly KeyValuePair<string, string> emptyKeyValuePair = new KeyValuePair<string, string>("", "");
 
-        public static PropertiesFile ParseFile(string path)
+        public static PropertiesFile ParseFile(string path, CultureInfo defaultCultureInfo)
         {
             if (path == null
-                || File.Exists(path))
+                || !File.Exists(path))
             {
-                throw new FileNotFoundException("File does not exist", path);
+                throw new FileNotFoundException("Properties file does not exist: " + path);
             }
 
-            if (!TryParseLanguageAndRegion(Path.GetFileName(path), out string language, out string region))
-            {
-                throw new TranslationException("Properties file name is missing language suffix.");
-            }
-            string languageLower = language.ToLowerInvariant();
-            string regionUpper = region.ToUpperInvariant();
+            TryGetLanguageAndRegion(Path.GetFileNameWithoutExtension(path), out string language, out string region);
 
             string text = File.ReadAllText(path, Encoding.UTF8);
-            return ParseText(text, new CultureInfo($"{languageLower}-{regionUpper}"));
+            return ParseText(text, GetCultureInfo(language, region, defaultCultureInfo));
+        }
+
+        private static CultureInfo GetCultureInfo(string language, string region, CultureInfo defaultCultureInfo)
+        {
+            string languageLower = language?.ToLowerInvariant();
+            string regionUpper = region?.ToUpperInvariant();
+
+            if (!string.IsNullOrEmpty(languageLower)
+                && !string.IsNullOrEmpty(regionUpper))
+            {
+                return new CultureInfo($"{languageLower}-{regionUpper}");
+            }
+            else if (!string.IsNullOrEmpty(languageLower))
+            {
+                return new CultureInfo($"{languageLower}");
+            }
+            else
+            {
+                return defaultCultureInfo;
+            }
         }
 
         public static PropertiesFile ParseText(string text, CultureInfo cultureInfo)
@@ -122,36 +137,35 @@ namespace ProTrans
             }
         }
 
-        private static string GetSubstring(string text, int startIndex)
+        public static bool TryGetLanguageAndRegion(string fileNameWithoutException, out string language, out string region)
         {
-            if (startIndex <= 0)
-            {
-                return text;
-            }
-
-            return text.Substring(startIndex);
-        }
-
-        public static bool TryParseLanguageAndRegion(string fileName, out string language, out string region)
-        {
-            string languageAndRegionSuffix = GetSubstring(fileName, fileName.IndexOf("_", StringComparison.InvariantCultureIgnoreCase));
-            string[] languageAndRegionArray = languageAndRegionSuffix.Split("_");
-            if (languageAndRegionArray.Length >= 2)
-            {
-                language = languageAndRegionArray[0];
-                region = languageAndRegionArray[1];
-                return true;
-            }
-
-            if (languageAndRegionArray.Length >= 1)
-            {
-                language = languageAndRegionArray[0];
-                region = "";
-                return true;
-            }
-
             language = "";
-            region= "";
+            region = "";
+
+            int indexOfUnderscore = fileNameWithoutException.IndexOf("_", StringComparison.InvariantCultureIgnoreCase);
+            if (indexOfUnderscore < 0)
+            {
+                return true;
+            }
+            string languageAndRegionSuffix = fileNameWithoutException.Substring(indexOfUnderscore + 1);
+            string[] languageAndRegionArray = languageAndRegionSuffix.Split("_");
+            if (languageAndRegionArray.Length <= 0)
+            {
+                return true;
+            }
+
+            language = languageAndRegionArray[0];
+            if (languageAndRegionArray.Length > 1)
+            {
+                region = languageAndRegionArray[1];
+            }
+
+            if (language.Length != 2
+                || (region.Length > 0 && region.Length != 2))
+            {
+                throw new TranslationException($"Expected properties file suffix with two letter language and region codes separated by underscore but got '{languageAndRegionSuffix}' (language: {language}, region: {region})");
+            }
+
             return false;
         }
 

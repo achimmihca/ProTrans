@@ -5,11 +5,16 @@ namespace ProTrans
 {
     public static class LogUtils
     {
-        internal static void Log(LogLevel logLevel, Func<string> textGetter)
+        internal static void Log(LogLevel logLevel, Func<string> textGetter, Exception cause = null)
         {
-            if ((int)logLevel < (int)TranslationConfig.Singleton.minimumLogLevel)
+            if ((int)logLevel < (int)TranslationConfig.Singleton.MinimumLogLevel)
             {
                 return;
+            }
+
+            if (cause != null)
+            {
+                Debug.LogException(cause);
             }
 
             string text = textGetter();
