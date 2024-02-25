@@ -8,7 +8,6 @@ namespace ProTrans
         public static TranslationConfig Singleton { get; set; } = new();
 
         public LogLevel minimumLogLevel = LogLevel.Warning;
-        public Func<PropertiesFile> basePropertiesFileGetter = StreamingAssetsTranslationResourceDiscovery.GetBasePropertiesFile;
-        public Func<CultureInfo, CultureInfo> fallbackCultureInfoGetter = StreamingAssetsTranslationResourceDiscovery.GetFallbackCultureInfo;
+        public Func<CultureInfo, PropertiesFile> propertiesFileGetter = StreamingAssetsPropertiesFileLoader.GetPropertiesFile;
     }
 }

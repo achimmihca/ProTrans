@@ -28,7 +28,7 @@ namespace ProTrans
 
         public static List<CultureInfo> GetTranslatedLanguages()
         {
-            return TranslationUtils.GetTranslatedLanguages();
+            return TranslationUtils.GetTranslatedCultureInfos();
         }
 
     }

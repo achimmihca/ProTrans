@@ -12,6 +12,12 @@ namespace ProTrans
 
         public static PropertiesFile ParseFile(string path)
         {
+            if (path == null
+                || File.Exists(path))
+            {
+                throw new FileNotFoundException("File does not exist", path);
+            }
+
             if (!TryParseLanguageAndRegion(Path.GetFileName(path), out string language, out string region))
             {
                 throw new TranslationException("Properties file name is missing language suffix.");

@@ -5,14 +5,14 @@ namespace ProTrans
 {
     internal static class TranslationUtils
     {
+        internal static List<CultureInfo> GetTranslatedCultureInfos()
+        {
+            return new List<CultureInfo>();
+        }
+
         internal static string Get(string key)
         {
             return key;
-        }
-
-        internal static List<CultureInfo> GetTranslatedLanguages()
-        {
-            return new List<CultureInfo>();
         }
 
         internal static string Get(string key, params object[] placeholderStrings)
