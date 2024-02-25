@@ -10,10 +10,15 @@ namespace ProTrans
     {
         [Delayed]
         public string key;
-        public Dictionary<string, string> placeholders = new();
+        public List<string> placeholders = new();
 
         private TMP_Text uiText;
         private string lastKey;
+
+        private void Awake()
+        {
+            uiText = GetComponent<TMP_Text>();
+        }
 
         private void Start()
         {
@@ -40,13 +45,7 @@ namespace ProTrans
                 return;
             }
 
-            string translation = Translation.Get(trimmedKey, placeholders);
-
-            if (uiText == null)
-            {
-                uiText = GetComponent<TMP_Text>();
-            }
-            uiText.text = translation;
+            uiText.text = Translation.Get(trimmedKey, placeholders);
         }
     }
 }
