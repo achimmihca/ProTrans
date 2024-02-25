@@ -2,7 +2,8 @@
     "name": "Samples",
     "rootNamespace": "",
     "references": [
-        "com.achimmihca.protrans"
+        "com.achimmihca.protrans",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

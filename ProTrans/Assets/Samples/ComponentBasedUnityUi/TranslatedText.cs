@@ -1,16 +1,16 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using TMPro;
+using UnityEngine;
 
 namespace ProTrans
 {
-    [RequireComponent(typeof(Text))]
+    [RequireComponent(typeof(TMP_Text))]
     [ExecuteInEditMode]
     public class TranslatedText : MonoBehaviour
     {
         [Delayed]
         public string key;
 
-        private Text uiText;
+        private TMP_Text uiText;
         private string lastKey;
 
         private void Start()
@@ -42,7 +42,7 @@ namespace ProTrans
 
             if (uiText == null)
             {
-                uiText = GetComponent<Text>();
+                uiText = GetComponent<TMP_Text>();
             }
             uiText.text = translation;
         }
