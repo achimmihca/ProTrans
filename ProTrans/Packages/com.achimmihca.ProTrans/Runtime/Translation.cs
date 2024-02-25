@@ -6,11 +6,6 @@ namespace ProTrans
 {
     public static class Translation
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void StaticInit()
-        {
-        }
-
         public static string Get(string key, params object[] placeholderStrings)
         {
             return TranslationUtils.Get(key, placeholderStrings);

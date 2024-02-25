@@ -5,10 +5,10 @@ using NUnit.Framework;
 
 namespace ProTrans
 {
-    public class PropertiesFileParserTest
+    public class PropertiesFileParserTests
     {
         [Test]
-        public void DoPropertiesFileParserTest()
+        public void PropertiesFileParserTest()
         {
             string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties.properties";
             PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(filePath, new CultureInfo("en"));

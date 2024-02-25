@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ProTrans
 {
@@ -11,7 +12,7 @@ namespace ProTrans
         {
             List<CultureInfo> result = new List<CultureInfo>();
 
-            PropertiesFile defaultPropertiesFile = TranslationConfig.Singleton.PropertiesFileGetter(null);
+            PropertiesFile defaultPropertiesFile = GetPropertiesFile(null);
             if (defaultPropertiesFile != null)
             {
                 result.Add(TranslationConfig.Singleton.DefaultCultureInfo);
@@ -27,7 +28,7 @@ namespace ProTrans
 
                 try
                 {
-                    PropertiesFile propertiesFile = TranslationConfig.Singleton.PropertiesFileGetter(cultureInfo);
+                    PropertiesFile propertiesFile = GetPropertiesFile(cultureInfo);
                     if (propertiesFile != null)
                     {
                         result.Add(cultureInfo);
@@ -56,17 +57,18 @@ namespace ProTrans
 
         internal static bool TryGet(CultureInfo cultureInfo, string key, Dictionary<string,string> placeholders, out string translation)
         {
-            PropertiesFile propertiesFile = TranslationConfig.Singleton.PropertiesFileGetter(cultureInfo);
+            PropertiesFile propertiesFile = GetPropertiesFile(cultureInfo);
             if (propertiesFile != null
                 && propertiesFile.TryGetValue(key, out translation))
             {
-                translation = ReplacePlaceholders(translation, placeholders);
+                translation = ReplacePlaceholders(key, translation, placeholders);
+                CheckMissingPlaceholders(key, translation);
                 return true;
             }
 
             if (cultureInfo != null)
             {
-                CultureInfo fallbackCultureInfo = TranslationConfig.Singleton.FallbackCultureInfoGetter(cultureInfo);
+                CultureInfo fallbackCultureInfo = GetFallbackCultureInfo(cultureInfo);
                 if (!Equals(fallbackCultureInfo, cultureInfo))
                 {
                     return TryGet(fallbackCultureInfo, key, placeholders, out translation);
@@ -75,6 +77,18 @@ namespace ProTrans
 
             translation = key;
             return false;
+        }
+
+        private static void CheckMissingPlaceholders(string key, string translation)
+        {
+            if (TranslationConfig.Singleton.MissingPlaceholderStrategy is not MissingPlaceholderStrategy.Ignore)
+            {
+                MatchCollection matches = Regex.Matches(translation, @"\{(?<placeholder>\w+)\}");
+                foreach (Match match in matches)
+                {
+                    HandleMissingPlaceholder(key, match.Groups["placeholder"].Value);
+                }
+            }
         }
 
         private static Dictionary<string,string> CreatePlaceholderDictionary(string key, params object[] placeholderStrings)
@@ -110,13 +124,13 @@ namespace ProTrans
             for (int i = 0; i < placeholderStrings.Length && i + 1 < placeholderStrings.Length; i += 2)
             {
                 string placeholderKey = placeholderStrings[i].ToString();
-                string placeholderValue = placeholderStrings[i + 1].ToString();
+                string placeholderValue = placeholderStrings[i + 1]?.ToString();
                 placeholders[placeholderKey] = placeholderValue;
             }
             return placeholders;
         }
 
-        private static string ReplacePlaceholders(string translation, Dictionary<string,string> placeholders)
+        private static string ReplacePlaceholders(string key, string translation, Dictionary<string,string> placeholders)
         {
             if (placeholders == null
                 || placeholders.Count == 0)
@@ -132,8 +146,51 @@ namespace ProTrans
                 {
                     translationWithoutPlaceholders = translationWithoutPlaceholders.Replace(placeholderText, placeholder.Value);
                 }
+                else
+                {
+                    HandleUnexpectedPlaceholder(key, translation, placeholder.Key);
+                }
             }
+
             return translationWithoutPlaceholders;
+        }
+
+        private static PropertiesFile GetPropertiesFile(CultureInfo cultureInfo)
+        {
+            return TranslationConfig.Singleton.PropertiesFileProvider.GetPropertiesFile(cultureInfo);
+        }
+
+        private static CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo)
+        {
+            return TranslationConfig.Singleton.FallbackCultureInfoProvider.GetFallbackCultureInfo(cultureInfo);
+        }
+
+        private static void HandleUnexpectedPlaceholder(string key, string translation, string placeholderKey)
+        {
+            switch (TranslationConfig.Singleton.UnexpectedPlaceholderStrategy)
+            {
+                case UnexpectedPlaceholderStrategy.Ignore:
+                    return;
+                case UnexpectedPlaceholderStrategy.Log:
+                    LogUtils.Log(LogLevel.Warning, () => $"Unexpected placeholder '{placeholderKey}' for translation of '{key}'");
+                    return;
+                case UnexpectedPlaceholderStrategy.Throw:
+                    throw new TranslationException($"Unexpected placeholder '{placeholderKey}' for translation of '{key}'");
+            }
+        }
+
+        private static void HandleMissingPlaceholder(string key, string placeholderKey)
+        {
+            switch (TranslationConfig.Singleton.MissingPlaceholderStrategy)
+            {
+                case MissingPlaceholderStrategy.Ignore:
+                    return;
+                case MissingPlaceholderStrategy.Log:
+                    LogUtils.Log(LogLevel.Warning, () => $"Missing placeholder '{placeholderKey}' for translation of '{key}'");
+                    return;
+                case MissingPlaceholderStrategy.Throw:
+                    throw new TranslationException($"Missing placeholder '{placeholderKey}' for translation of '{key}'");
+            }
         }
     }
 }

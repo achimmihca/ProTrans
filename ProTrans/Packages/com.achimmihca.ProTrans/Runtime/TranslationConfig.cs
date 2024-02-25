@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Globalization;
+using UnityEngine;
 
 namespace ProTrans
 {
     public class TranslationConfig
     {
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void StaticInit()
+        {
+            Singleton = new();
+        }
+
         public static TranslationConfig Singleton { get; set; } = new();
 
         public LogLevel MinimumLogLevel { get; set; } = LogLevel.Warning;
         public CultureInfo DefaultCultureInfo { get; set; } = new CultureInfo("en");
         public CultureInfo CurrentCultureInfo { get; set; } = new CultureInfo("en");
-        public Func<CultureInfo, PropertiesFile> PropertiesFileGetter { get; set; } = StreamingAssetsPropertiesFileLoader.GetPropertiesFile;
-        public Func<CultureInfo, CultureInfo> FallbackCultureInfoGetter { get; set; } = StreamingAssetsPropertiesFileLoader.GetFallbackCultureInfo;
+        public MissingPlaceholderStrategy MissingPlaceholderStrategy { get; set; } = MissingPlaceholderStrategy.Throw;
+        public UnexpectedPlaceholderStrategy UnexpectedPlaceholderStrategy { get; set; } = UnexpectedPlaceholderStrategy.Throw;
+        public IPropertiesFileProvider PropertiesFileProvider { get; set; } = new StreamingAssetsPropertiesFileProvider();
+        public IFallbackCultureInfoProvider FallbackCultureInfoProvider { get; set; } = new IgnoreRegionFallbackCultureInfoProvider();
     }
 }
