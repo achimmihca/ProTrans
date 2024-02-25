@@ -10,28 +10,28 @@ namespace ProTrans
         public void DoPropertiesFileParserTest()
         {
             string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties.properties";
-            Dictionary<string, string> properties = PropertiesFileParser.ParseFile(filePath);
+            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(filePath);
 
-            bool containsComment = AnyKeyToLowerContains(properties, "comment")
-                                   || AnyValueToLowerContains(properties, "comment");
+            bool containsComment = AnyKeyToLowerContains(propertiesFile, "comment")
+                                   || AnyValueToLowerContains(propertiesFile, "comment");
             Assert.That(!containsComment, "Contains comment in key or value");
-            
-            AssertPropertyIgnoreCase(properties, "test_helloWorld", "Hello world!");
-            AssertPropertyIgnoreCase(properties, "test_equals", "before=after");
-            AssertPropertyIgnoreCase(properties, "test_parameters", "First name: {firstName}, second name: {secondName}");
-            AssertPropertyIgnoreCase(properties, "test_nonAscii", "üäößêéèáà");
-            AssertPropertyIgnoreCase(properties, "test_quotes", "\"All these outer and 'single quotes' and \"double quotes\" are kept\"");
-            AssertPropertyIgnoreCase(properties, "test_spaceAtTheEndNotAroundEquals", "Space around the equals sign is trimmed, but the ending space is kept: ");
-            AssertPropertyIgnoreCase(properties, "test_tab", "Before tab\tafter tab");
-            AssertPropertyIgnoreCase(properties, "test_newline", "First line\nAfter newline\rAfter carriage return");
-            AssertPropertyIgnoreCase(properties, "test_backslash", "\\Just two backslashes\\");
-            AssertPropertyIgnoreCase(properties, "test_targetCities", "Detroit,Chicago,Los Angeles");
-            AssertPropertyIgnoreCase(properties, "test_KeepSpace", " <- white-space -> ");
+
+            AssertPropertyIgnoreCase(propertiesFile, "test_helloWorld", "Hello world!");
+            AssertPropertyIgnoreCase(propertiesFile, "test_equals", "before=after");
+            AssertPropertyIgnoreCase(propertiesFile, "test_parameters", "First name: {firstName}, second name: {secondName}");
+            AssertPropertyIgnoreCase(propertiesFile, "test_nonAscii", "üäößêéèáà");
+            AssertPropertyIgnoreCase(propertiesFile, "test_quotes", "\"All these outer and 'single quotes' and \"double quotes\" are kept\"");
+            AssertPropertyIgnoreCase(propertiesFile, "test_spaceAtTheEndNotAroundEquals", "Space around the equals sign is trimmed, but the ending space is kept: ");
+            AssertPropertyIgnoreCase(propertiesFile, "test_tab", "Before tab\tafter tab");
+            AssertPropertyIgnoreCase(propertiesFile, "test_newline", "First line\nAfter newline\rAfter carriage return");
+            AssertPropertyIgnoreCase(propertiesFile, "test_backslash", "\\Just two backslashes\\");
+            AssertPropertyIgnoreCase(propertiesFile, "test_targetCities", "Detroit,Chicago,Los Angeles");
+            AssertPropertyIgnoreCase(propertiesFile, "test_KeepSpace", " <- white-space -> ");
         }
 
-        private static bool AnyKeyToLowerContains(Dictionary<string, string> properties, string substring)
+        private static bool AnyKeyToLowerContains(PropertiesFile propertiesFile, string substring)
         {
-            foreach (KeyValuePair<string, string> entry in properties)
+            foreach (KeyValuePair<string, string> entry in propertiesFile.Dictionary)
             {
                 if (entry.Key.ToLowerInvariant().Contains(substring))
                 {
@@ -42,9 +42,9 @@ namespace ProTrans
             return false;
         }
 
-        private static bool AnyValueToLowerContains(Dictionary<string, string> properties, string substring)
+        private static bool AnyValueToLowerContains(PropertiesFile propertiesFile, string substring)
         {
-            foreach (KeyValuePair<string, string> entry in properties)
+            foreach (KeyValuePair<string, string> entry in propertiesFile.Dictionary)
             {
                 if (entry.Value.ToLowerInvariant().Contains(substring))
                 {
@@ -55,9 +55,9 @@ namespace ProTrans
             return false;
         }
 
-        private static void AssertPropertyIgnoreCase(Dictionary<string, string> properties, string key, string expectedValue)
+        private static void AssertPropertyIgnoreCase(PropertiesFile propertiesFile, string key, string expectedValue)
         {
-            if (properties.TryGetValue(key, out string actualValue))
+            if (propertiesFile.TryGetValue(key, out string actualValue))
             {
                 if (!string.Equals(expectedValue, actualValue, StringComparison.InvariantCultureIgnoreCase))
                 {

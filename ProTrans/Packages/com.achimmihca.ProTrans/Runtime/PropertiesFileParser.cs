@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -9,13 +10,20 @@ namespace ProTrans
     {
         private static readonly KeyValuePair<string, string> emptyKeyValuePair = new KeyValuePair<string, string>("", "");
 
-        public static Dictionary<string, string> ParseFile(string path)
+        public static PropertiesFile ParseFile(string path)
         {
+            if (!TryParseLanguageAndRegion(Path.GetFileName(path), out string language, out string region))
+            {
+                throw new TranslationException("Properties file name is missing language suffix.");
+            }
+            string languageLower = language.ToLowerInvariant();
+            string regionUpper = region.ToUpperInvariant();
+
             string text = File.ReadAllText(path, Encoding.UTF8);
-            return ParseText(text);
+            return ParseText(text, new CultureInfo($"{languageLower}-{regionUpper}"));
         }
 
-        public static Dictionary<string, string> ParseText(string text)
+        public static PropertiesFile ParseText(string text, CultureInfo cultureInfo)
         {
             Dictionary<string, string> map = new Dictionary<string, string>();
             using (StringReader stringReader = new StringReader(text))
@@ -29,7 +37,7 @@ namespace ProTrans
                     }
                 }
             }
-            return map;
+            return new PropertiesFile(map, cultureInfo);
         }
 
         private static KeyValuePair<string, string> ParseLine(string line, StringReader stringReader)
@@ -59,7 +67,7 @@ namespace ProTrans
             // When line ends with a backslash, also consume the following line.
             StringBuilder sb = new StringBuilder();
             ParseEscapedCharacters(trimmedValuePart, sb, stringReader);
-            
+
             return new KeyValuePair<string, string>(trimmedKeyPart, sb.ToString());
         }
 
@@ -96,7 +104,7 @@ namespace ProTrans
                     sb.Append(c);
                 }
             }
-            
+
             // Line has ended. Check if it continues on next line.
             if (isBackslashForFollowingCharacter)
             {
@@ -106,6 +114,59 @@ namespace ProTrans
                     ParseEscapedCharacters(nextLine.TrimStart(), sb, stringReader);
                 }
             }
+        }
+
+        private static string GetSubstring(string text, int startIndex)
+        {
+            if (startIndex <= 0)
+            {
+                return text;
+            }
+
+            return text.Substring(startIndex);
+        }
+
+        public static bool TryParseLanguageAndRegion(string fileName, out string language, out string region)
+        {
+            string languageAndRegionSuffix = GetSubstring(fileName, fileName.IndexOf("_", StringComparison.InvariantCultureIgnoreCase));
+            string[] languageAndRegionArray = languageAndRegionSuffix.Split("_");
+            if (languageAndRegionArray.Length >= 2)
+            {
+                language = languageAndRegionArray[0];
+                region = languageAndRegionArray[1];
+                return true;
+            }
+
+            if (languageAndRegionArray.Length >= 1)
+            {
+                language = languageAndRegionArray[0];
+                region = "";
+                return true;
+            }
+
+            language = "";
+            region= "";
+            return false;
+        }
+
+        public static string GetLanguageAndRegionSuffix(CultureInfo cultureInfo)
+        {
+            if (cultureInfo == null)
+            {
+                return "";
+            }
+
+            string language = cultureInfo.TwoLetterISOLanguageName;
+            string languageAndRegionSuffix = $"_{language.ToLowerInvariant()}";
+
+            if (!cultureInfo.IsNeutralCulture)
+            {
+                RegionInfo regionInfo = new RegionInfo(cultureInfo.ToString());
+                string region = regionInfo.TwoLetterISORegionName;
+                languageAndRegionSuffix += $"_{region.ToUpperInvariant()}";
+            }
+
+            return languageAndRegionSuffix;
         }
     }
 }

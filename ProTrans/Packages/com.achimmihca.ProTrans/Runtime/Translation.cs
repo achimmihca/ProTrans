@@ -18,7 +18,7 @@ namespace ProTrans
 
         public static string Get(string key, Dictionary<string, string> placeholders)
         {
-            return TranslationUtils.GetTranslation(key, placeholders);
+            return TranslationUtils.Get(key, placeholders);
         }
 
         public static bool TryGet(string key, Dictionary<string, string> placeholders)
