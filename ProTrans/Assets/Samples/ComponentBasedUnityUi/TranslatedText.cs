@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace ProTrans
@@ -9,6 +10,7 @@ namespace ProTrans
     {
         [Delayed]
         public string key;
+        public Dictionary<string, string> placeholders = new();
 
         private TMP_Text uiText;
         private string lastKey;
@@ -38,7 +40,7 @@ namespace ProTrans
                 return;
             }
 
-            string translation = TranslationManager.GetTranslation(trimmedKey);
+            string translation = Translation.Get(trimmedKey, placeholders);
 
             if (uiText == null)
             {
