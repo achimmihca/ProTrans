@@ -1,0 +1,17 @@
+{
+    "name": "Samples",
+    "rootNamespace": "",
+    "references": [
+        "com.achimmihca.protrans",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

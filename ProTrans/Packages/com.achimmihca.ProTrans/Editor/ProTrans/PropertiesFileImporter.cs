@@ -4,7 +4,7 @@ using System.Text;
 using UnityEditor.AssetImporters;
 
 [ScriptedImporter( 1, "properties" )]
-public class SrtImporter : ScriptedImporter
+public class PropertiesFileImporter : ScriptedImporter
 {
 	public override void OnImportAsset( AssetImportContext ctx )
 	{
