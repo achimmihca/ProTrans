@@ -8,9 +8,9 @@ namespace ProTrans
     public class PropertiesFileParserTests
     {
         [Test]
-        public void PropertiesFileParserTest()
+        public void ParseUtf8WithEqualsSeparatorTest()
         {
-            string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties.properties";
+            string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties/TestProperties.properties";
             PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(filePath, new CultureInfo("en"));
 
             bool containsComment = AnyKeyToLowerContains(propertiesFile, "comment")
@@ -28,6 +28,14 @@ namespace ProTrans
             AssertPropertyIgnoreCase(propertiesFile, "test_backslash", "\\Just two backslashes\\");
             AssertPropertyIgnoreCase(propertiesFile, "test_targetCities", "Detroit,Chicago,Los Angeles");
             AssertPropertyIgnoreCase(propertiesFile, "test_KeepSpace", " <- white-space -> ");
+        }
+
+        [Test]
+        public void ParseAsciiWithColonSeparatorTest()
+        {
+            string filePath = "Packages/com.achimmihca.ProTrans/Tests/Editor/TestProperties/UmlautsAscii.properties";
+            PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(filePath, new CultureInfo("en"));
+            AssertPropertyIgnoreCase(propertiesFile, "test_ascii", "Übeltäter übergibt Ärzten öfters äußerst ätzende Öle.");
         }
 
         private static bool AnyKeyToLowerContains(PropertiesFile propertiesFile, string substring)

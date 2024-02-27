@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ProTrans
 {
@@ -133,57 +134,60 @@ namespace ProTrans
             string trimmedValuePart = valuePart.TrimStart();
 
             // Write characters of line to StringBuilder.
-            // Thereby, replace escaped characters.
             // When line ends with a backslash, also consume the following line.
             StringBuilder sb = new StringBuilder();
-            ParseEscapedCharacters(trimmedValuePart, sb, stringReader);
+            ParseEscapedNewlineCharacter(trimmedValuePart, sb, stringReader);
 
-            return new KeyValuePair<string, string>(trimmedKeyPart, sb.ToString());
+            string parsedLine = ParseEscapedCharacters(sb.ToString());
+
+            return new KeyValuePair<string, string>(trimmedKeyPart, parsedLine);
         }
 
-        private static void ParseEscapedCharacters(string line, StringBuilder sb, StringReader stringReader)
+        private static string ParseEscapedCharacters(string line)
         {
-            bool isBackslashForFollowingCharacter = false;
-            foreach (char c in line)
-            {
-                if (isBackslashForFollowingCharacter)
-                {
-                    isBackslashForFollowingCharacter = false;
-                    switch (c)
-                    {
-                        case 't':
-                            sb.Append('\t');
-                            break;
-                        case 'n':
-                            sb.Append('\n');
-                            break;
-                        case 'r':
-                            sb.Append('\r');
-                            break;
-                        default:
-                            sb.Append(c);
-                            break;
-                    }
-                }
-                else if (c == '\\')
-                {
-                    isBackslashForFollowingCharacter = true;
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
+            // Use C# method to escape \t, \n, \r, \\, and all sorts of escaped Unicode characters.
+            return Regex.Unescape(line);
+        }
 
-            // Line has ended. Check if it continues on next line.
-            if (isBackslashForFollowingCharacter)
+        private static void ParseEscapedNewlineCharacter(string line, StringBuilder sb, StringReader stringReader)
+        {
+            if (EndsWithEscapedNewlineCharacter(line))
             {
+                sb.Append(line.Substring(0, line.Length - 1));
+
+                // Also parse next line
                 string nextLine = stringReader.ReadLine();
                 if (nextLine != null)
                 {
-                    ParseEscapedCharacters(nextLine.TrimStart(), sb, stringReader);
+                    ParseEscapedNewlineCharacter(nextLine.TrimStart(), sb, stringReader);
                 }
             }
+            else
+            {
+                // Online parse this line as is
+                sb.Append(line);
+            }
+        }
+
+        private static bool EndsWithEscapedNewlineCharacter(string line)
+        {
+            // Line must end with uneven number of backslashes.
+            // Otherwise, it ends with none or an escaped backslash, but not with an escaped newline character.
+            int backslashCount = 0;
+            for (int i = line.Length - 1; i >= 0;  i -= 1)
+            {
+                if (line[i] == '\\')
+                {
+                    backslashCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return backslashCount > 0
+                   && (backslashCount % 2) == 1;
         }
 
         private static int FindIndexOfSeparator(string line)
