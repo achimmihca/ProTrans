@@ -63,10 +63,7 @@ namespace ProTrans
 
         private static KeyValuePair<string, string> ParseLine(string line, StringReader stringReader)
         {
-            string lineTimmedStart = line.TrimStart();
-            bool isComment = lineTimmedStart.StartsWith("#")
-                             || lineTimmedStart.StartsWith("!");
-            if (isComment)
+            if (IsComment(line))
             {
                 return emptyKeyValuePair;
             }
@@ -201,6 +198,13 @@ namespace ProTrans
             }
 
             return -1;
+        }
+
+        private static bool IsComment(string line)
+        {
+            string lineTrimmedStart = line.TrimStart();
+            return lineTrimmedStart.StartsWith("#")
+                   || lineTrimmedStart.StartsWith("!");
         }
     }
 }
