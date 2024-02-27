@@ -71,13 +71,13 @@ namespace ProTrans
                 return emptyKeyValuePair;
             }
 
-            int indexOfEquals = line.IndexOf("=", StringComparison.InvariantCulture);
-            if (indexOfEquals < 0)
+            int indexOfSeparator = FindIndexOfSeparator(line);
+            if (indexOfSeparator < 0)
             {
                 return emptyKeyValuePair;
             }
-            string keyPart = line.Substring(0, indexOfEquals);
-            string valuePart = line.Substring(indexOfEquals + 1, line.Length - indexOfEquals - 1);
+            string keyPart = line.Substring(0, indexOfSeparator);
+            string valuePart = line.Substring(indexOfSeparator + 1, line.Length - indexOfSeparator - 1);
 
             string trimmedKeyPart = keyPart.Trim();
             // For the value, only the start (around the equals sign) is trimmed.
@@ -187,6 +187,20 @@ namespace ProTrans
             }
 
             return languageAndRegionSuffix;
+        }
+
+        private static int FindIndexOfSeparator(string line)
+        {
+            for (int i = 0; i < line.Length; i++)
+            {
+                switch (line[i])
+                {
+                    case '=':
+                    case ':': return i;
+                }
+            }
+
+            return -1;
         }
     }
 }
