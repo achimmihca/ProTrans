@@ -1,96 +1,66 @@
-
-[![Build Status](https://travis-ci.org/achimmihca/ProTrans.svg?branch=main)](https://travis-ci.org/achimmihca/ProTrans)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/achimmihca/ProTrans/blob/main/LICENSE)
 [![Sponsor this project](https://img.shields.io/badge/-Sponsor-fafbfc?logo=GitHub%20Sponsors)](https://github.com/sponsors/achimmihca)
 
 # ProTrans
-Properties file translation for Unity3D
+Properties file based translations for the Unity game engine.
+
+Properties files are [simple](https://docs.oracle.com/cd/E23095_01/Platform.93/ATGProgGuide/html/s0204propertiesfileformat01.html), industry proven in Java, and well supported by many localization tools.
 
 ## Features
-- Get strings for different languages from UTF-8 encoded properties files that are placed in a "Resources" folder
-- Reload translations and update scene on resource change
-- Optionally, generate constants for the translation keys
-- Get languages with existing translations
-- Separate logging configuration for play-mode and edit-mode
-- Log missing translations and placeholders only once when in play-mode
+- Get strings for different languages from properties files
+- Support regional dialects and fallback chains
+  - For example `en-US` and `en-GB` can fall back to common `en` for a missing translation
+- Add a new language or regional dialect by adding a properties file with corresponding suffix
+- Sensible defaults for missing translations
+- Simple static methods that can be accessed from anywhere
+- Usable on any thread, not only on the main thread
+- Built on top of [System.Globalization.CultureInfo](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo)
 
-# Demo
-- Clone this repo
-- Open the Unity project, and take a look at the sample scenes.
+## Example:
+```
+# Example properties file
+hello = Hello {name}!
+multilineUsingNewline = First line\nSecond line
+multilineUsingBackslash = First line\
+    Second line
+umlautDirectlyInUtf8File = Äpfel
+umlautAsEscapedAscii = \u00C4pfel
+colonAsSeparator: Separate key and value via colon or equals
+```
 
-# How to Use
+```
+// Get translations via static methods 
+Translation.Get("multilineUsingNewline");
 
-## Get the Package
+// Specify placeholders via varargs or a dictionary 
+Translation.Get("hello", "name", "Alice");
+Translation.Get("hello", new Dictionary<string, string>() { {"name", "Alice"} });
+
+// Change current language and other configuration via static properties
+TranslationConfig.Singleton.CurrentCultureInfo = new CultureInfo("en-US");
+```
+
+## Installation
 - You can add a dependency to your `Packages/manifest.json` using a [Git URL](https://docs.unity3d.com/Documentation/Manual/upm-git.html) in the following form:
-  `"com.achimmihca.protrans": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans#v1.0.0"`
+  `"com.achimmihca.protrans": "https://github.com/achimmihca/ProTrans.git?path=ProTrans/Packages/com.achimmihca.ProTrans"`
     - Note that `#v1.0.0` can be used to specify a tag or commit hash.
-- This package ships with a sample that can be imported to your project using Unity's Package Manager.
+
+## Configuration
+- See [TranslationConfig](https://github.com/achimmihca/ProTrans/blob/main/ProTrans/Packages/com.achimmihca.ProTrans/Runtime/TranslationConfig.cs) for available properties
+- By default, properties files are expected in `StreamingAssets/Translations` and with name `messages.properties`, `messages_de_CH.properties`, etc.
+  - This can be changed by setting `TranslationConfig.PropertiesFileProvider`
+- By default, the base properties file (i.e. without any language and region suffix) is expected to contain English translations.
+  - This can be changed by setting `TranslationConfig.DefaultCultureInfo`
+- By default a language is searched in the following order
+  - (1) currently selected language (e.g. `messages_de_CH.properties`)
+  - (2) without the region suffix (e.g. `messages_de.properties`)
+  - (3) without any suffix (e.g., `messages.properties`)
+  - This can be changed by setting `TranslationConfig.FallbackCultureInfoProvider`
 
 ## Prepare Translations
-- Create `Assets/Resources/Translations/messages.properties` in your project and add some key-value pairs (e.g. `sampleScene_helloWorld = Hello world!`).
-    - Note that ProTrans assumes translations to be placed in the [Resources](https://docs.unity3d.com/Manual/SpecialFolders.html) special Unity folder.
-        - This is used to load translations at runtime without further configuration (e.g. when adding a new language).
-    - Use an underscore and [two letter country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) suffix for different languages.
-        - Example: `messages.properties` is the default (and fallback) language, `messages_de.properties` is for German translations, `messages_es.properties` is for Spanish translations
-
-## Prepare the Scene
-- Create a new tag "TranslationManager"
-- Place an instance of TranslationManager in your scene
-    - Add the "TranslationManager" tag to this instance
-- Now it is possible to call TranslationManager.GetTranslation manually or implement ITranslator interface
-- To translate a scene, the TranslationManager will call ITranslator.UpdateTranslation for every ITranslator instance in the scene.
-- ITranslator implementations should also call their own UpdateTranslation in Start().
-    - See `TranslatedText.cs` for an example
-
-## (Optional) Generate Constants
-- Use the corresponding menu item to create C# constants for your translation properties.
-    - Using constants instead of strings enables auto-completion, avoids typos, and makes refactoring easier.
-    - Example: `TranslationManager.GetTranslation(R.String.sampleScene_helloWorld)`
-
-# Properties Files in ProTrans
-Properties files are a standard in the Java world.
-However, ProTrans has some specifics.
-
-## Encoding
-- Properties files for ProTrans should be encoded in UTF-8.
-    - Note that this encoding differs from the encoding that properties files in Java typically use.
-    - Encoded unicode characters are not supported (e.g. `\u002c`).
-        - Instead, directly use the unescaped character in the UTF-8 encoded file.
-
-## Syntax
-- Key and value are separated by an equals sign.
-    - Note that a colon cannot be used to separate key and value.
-- Whitespace around the key and the equals sign is trimmed.
-    - Thus the following are equivalent.
-        - `sayHello=Hello!`
-        - `sayHello  = Hello!`
-    - Note that space at the end of the line is NOT trimmed.
-- Comments start with `#` or `!`
-- Use curly braces for named placeholders.
-    - Example: `sayHelloWithName = Hello {name}`
-- The characters newline, carriage return, and tab can be inserted as \n, \r, and \t, respectively.
-    - Example: `multiLineExample = First line\nSecond line`
-- You can also use a backslash at the end of a line. Whitespace of such a continued line will be trimmed at the start (but not at the end)
-    - Example:
-    ```
-    multiLineExample2 = First line\
-                        Second line
-    ```
-- The backslash character must be escaped as a double backslash.
-    - Example: `path=c:\\docs\\doc1`
-- To include space at the start of a translation, one can escape this space character
-    - Example: `exampleWithLeadingSpace=\ space at the start`
-
-### Example:
-```
-# This is a comment
-demoScene_button_quit_label = Quit
-demoScene_button_quit_tooltip = Closes the game
-demoScene_hello = Hello {name}!
-demoScene_multilineUsingNewline = First line\nSecond line
-demoScene_multilineUsingBackslash = First line\
-                                    Second line
-```
+- Use underscores and [two letter country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) as suffix for different languages and regional dialects.
+  - Example: `messages.properties` is the default (and fallback) language, `messages_de.properties` is for German translations, `messages_de_CH.properties` is for German as spoken in Switzerland.
+  - See also `CultureInfo.GetCultures(CultureTypes.AllCultures)`
 
 # History
 ProTrans has been created originally for [UltraStar Play](https://github.com/UltraStar-Deluxe/Play).
