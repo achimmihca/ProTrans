@@ -31,7 +31,7 @@ namespace ProTrans
             return TranslationUtils.GetPropertiesFile(cultureInfo);
         }
 
-        public static CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo)
+        public static CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo = null)
         {
             return TranslationUtils.GetFallbackCultureInfo(cultureInfo);
         }
