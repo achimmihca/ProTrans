@@ -26,5 +26,14 @@ namespace ProTrans
             return TranslationUtils.GetTranslatedCultureInfos();
         }
 
+        public static PropertiesFile GetPropertiesFile(CultureInfo cultureInfo)
+        {
+            return TranslationUtils.GetPropertiesFile(cultureInfo);
+        }
+
+        public static CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo)
+        {
+            return TranslationUtils.GetFallbackCultureInfo(cultureInfo);
+        }
     }
 }

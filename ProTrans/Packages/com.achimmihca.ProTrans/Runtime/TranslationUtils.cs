@@ -155,12 +155,12 @@ namespace ProTrans
             return translationWithoutPlaceholders;
         }
 
-        private static PropertiesFile GetPropertiesFile(CultureInfo cultureInfo)
+        internal static PropertiesFile GetPropertiesFile(CultureInfo cultureInfo)
         {
             return TranslationConfig.Singleton.PropertiesFileProvider.GetPropertiesFile(cultureInfo);
         }
 
-        private static CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo)
+        internal static CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo)
         {
             return TranslationConfig.Singleton.FallbackCultureInfoProvider.GetFallbackCultureInfo(cultureInfo);
         }
