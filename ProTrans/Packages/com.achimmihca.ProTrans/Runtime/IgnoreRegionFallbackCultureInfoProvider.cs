@@ -6,7 +6,8 @@ namespace ProTrans
     {
         public CultureInfo GetFallbackCultureInfo(CultureInfo cultureInfo)
         {
-            if (cultureInfo.IsNeutralCulture)
+            if (cultureInfo == null
+                || cultureInfo.IsNeutralCulture)
             {
                 return null;
             }
