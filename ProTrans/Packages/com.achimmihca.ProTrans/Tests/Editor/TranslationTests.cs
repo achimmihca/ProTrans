@@ -82,11 +82,11 @@ namespace ProTrans
         public void FallbackCultureInfoTest()
         {
             TranslationConfig.Singleton.CurrentCultureInfo = new CultureInfo("en");
-            Assert.AreEqual("Not translated to every language", Translation.Get("partial_translation"));
+            Assert.AreEqual("Partially translated (en)", Translation.Get("partial_translation"));
 
             // de-AT should fall back to use the translation from de
             TranslationConfig.Singleton.CurrentCultureInfo = new CultureInfo("de-AT");
-            Assert.AreEqual("Nicht übersetzt in jede Sprache", Translation.Get("partial_translation"));
+            Assert.AreEqual("Teilweise übersetzt (de)", Translation.Get("partial_translation"));
         }
 
         [Test]
