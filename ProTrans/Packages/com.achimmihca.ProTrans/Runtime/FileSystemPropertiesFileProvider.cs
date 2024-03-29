@@ -21,7 +21,7 @@ namespace ProTrans
             string path = GetFullPropertiesFilePath(null);
             if (!File.Exists(path))
             {
-                throw new TranslationException($"No base properties file found at path '{path}'");
+                return null;
             }
             PropertiesFile propertiesFile = PropertiesFileParser.ParseFile(path, TranslationConfig.Singleton.DefaultCultureInfo);
 
