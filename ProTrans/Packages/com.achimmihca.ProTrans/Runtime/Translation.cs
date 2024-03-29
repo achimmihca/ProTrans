@@ -16,9 +16,9 @@ namespace ProTrans
             return TranslationUtils.Get(key, placeholders);
         }
 
-        public static bool TryGet(string key, Dictionary<string, string> placeholders)
+        public static bool TryGet(string key, Dictionary<string, string> placeholders, out string translation)
         {
-            return TranslationUtils.TryGet(TranslationConfig.Singleton.CurrentCultureInfo, key, placeholders, out string translation);
+            return TranslationUtils.TryGet(TranslationConfig.Singleton.CurrentCultureInfo, key, placeholders, out translation);
         }
 
         public static List<CultureInfo> GetTranslatedCultureInfos()
