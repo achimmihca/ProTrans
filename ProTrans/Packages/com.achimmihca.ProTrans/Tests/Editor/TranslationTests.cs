@@ -112,5 +112,13 @@ namespace ProTrans
             TranslationConfig.Singleton.MissingPlaceholderStrategy = MissingPlaceholderStrategy.Ignore;
             Assert.AreEqual("Hello {name}!", Translation.Get("hello"));
         }
+
+        [Test]
+        public void TranslationKeyIsCaseInsensitiveTest()
+        {
+            TranslationConfig.Singleton.CurrentCultureInfo = new CultureInfo("en");
+            Assert.AreEqual("Hello Alice!", Translation.Get("hello", "name", "Alice"));
+            Assert.AreEqual("Hello Alice!", Translation.Get("HeLLo", "name", "Alice"));
+        }
     }
 }

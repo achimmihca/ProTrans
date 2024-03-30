@@ -27,7 +27,7 @@ namespace ProTrans
 
         public static PropertiesFile ParseText(string text, CultureInfo cultureInfo)
         {
-            Dictionary<string, string> map = new Dictionary<string, string>();
+            Dictionary<string, string> map = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             using (StringReader stringReader = new StringReader(text))
             {
                 for (string line = stringReader.ReadLine(); line != null; line = stringReader.ReadLine())
