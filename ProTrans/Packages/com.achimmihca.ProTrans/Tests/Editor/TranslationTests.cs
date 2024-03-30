@@ -120,5 +120,13 @@ namespace ProTrans
             Assert.AreEqual("Hello Alice!", Translation.Get("hello", "name", "Alice"));
             Assert.AreEqual("Hello Alice!", Translation.Get("HeLLo", "name", "Alice"));
         }
+
+        [Test]
+        public void TranslationPlaceholderIsCaseInsensitiveTest()
+        {
+            TranslationConfig.Singleton.CurrentCultureInfo = new CultureInfo("en");
+            Assert.AreEqual("Hello Alice!", Translation.Get("hello", "name", "Alice"));
+            Assert.AreEqual("Hello Alice!", Translation.Get("hello", "naME", "Alice"));
+        }
     }
 }

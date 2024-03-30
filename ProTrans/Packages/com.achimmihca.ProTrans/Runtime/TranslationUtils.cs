@@ -141,10 +141,11 @@ namespace ProTrans
             string translationWithoutPlaceholders = translation;
             foreach (KeyValuePair<string, string> placeholder in placeholders)
             {
-                string placeholderText = "{" + placeholder.Key + "}";
-                if (translationWithoutPlaceholders.Contains(placeholderText))
+                string placeholderPattern = "{" + placeholder.Key + "}";
+                if (translationWithoutPlaceholders.Contains(placeholderPattern, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    translationWithoutPlaceholders = translationWithoutPlaceholders.Replace(placeholderText, placeholder.Value);
+                    string replacementValue = placeholder.Value ?? "";
+                    translationWithoutPlaceholders = Regex.Replace(translationWithoutPlaceholders, placeholderPattern, replacementValue, RegexOptions.IgnoreCase);
                 }
                 else
                 {
