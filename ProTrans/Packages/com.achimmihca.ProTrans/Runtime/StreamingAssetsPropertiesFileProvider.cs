@@ -1,6 +1,4 @@
 ﻿using System.Globalization;
-using System.Threading;
-using System.Transactions;
 using UnityEngine;
 
 namespace ProTrans

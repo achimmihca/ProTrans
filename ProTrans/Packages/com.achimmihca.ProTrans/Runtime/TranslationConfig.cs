@@ -19,7 +19,7 @@ namespace ProTrans
         public CultureInfo CurrentCultureInfo { get; set; } = new CultureInfo("en");
         public MissingPlaceholderStrategy MissingPlaceholderStrategy { get; set; } = MissingPlaceholderStrategy.Throw;
         public UnexpectedPlaceholderStrategy UnexpectedPlaceholderStrategy { get; set; } = UnexpectedPlaceholderStrategy.Throw;
-        public IPropertiesFileProvider PropertiesFileProvider { get; set; } = new StreamingAssetsPropertiesFileProvider();
+        public IPropertiesFileProvider PropertiesFileProvider { get; set; } = new CachingPropertiesFileProvider(new StreamingAssetsPropertiesFileProvider());
         public IFallbackCultureInfoProvider FallbackCultureInfoProvider { get; set; } = new IgnoreRegionFallbackCultureInfoProvider();
     }
 }
