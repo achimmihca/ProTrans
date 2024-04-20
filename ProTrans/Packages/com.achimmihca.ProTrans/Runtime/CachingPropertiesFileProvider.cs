@@ -17,6 +17,7 @@ namespace ProTrans
         public void ClearCache()
         {
             cultureInfoToPropertiesFileCache.Clear();
+            defaultCultureInfoPropertiesFile = null;
         }
 
         public PropertiesFile GetPropertiesFile(CultureInfo cultureInfo)
