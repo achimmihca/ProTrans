@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace ProTrans
 {
@@ -28,17 +29,23 @@ namespace ProTrans
         public static PropertiesFile ParseText(string text, CultureInfo cultureInfo)
         {
             Dictionary<string, string> map = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-            using (StringReader stringReader = new StringReader(text))
+            using StringReader stringReader = new StringReader(text);
+
+            for (string line = stringReader.ReadLine(); line != null; line = stringReader.ReadLine())
             {
-                for (string line = stringReader.ReadLine(); line != null; line = stringReader.ReadLine())
+                KeyValuePair<string, string> entry = ParseLine(line, stringReader);
+                if (entry.Equals(emptyKeyValuePair))
                 {
-                    KeyValuePair<string, string> entry = ParseLine(line, stringReader);
-                    if (!entry.Equals(emptyKeyValuePair))
-                    {
-                        map.Add(entry.Key, entry.Value);
-                    }
+                    continue;
                 }
+
+                if (map.ContainsKey(entry.Key))
+                {
+                    Debug.LogWarning($"An item with the same key has already been added. Key: {entry.Key}");
+                }
+                map[entry.Key] = entry.Value;
             }
+
             return new PropertiesFile(map, cultureInfo);
         }
 

@@ -28,6 +28,8 @@ namespace ProTrans
             AssertPropertyIgnoreCase(propertiesFile, "test_backslash", "\\Just two backslashes\\");
             AssertPropertyIgnoreCase(propertiesFile, "test_targetCities", "Detroit,Chicago,Los Angeles");
             AssertPropertyIgnoreCase(propertiesFile, "test_KeepSpace", " <- white-space -> ");
+            AssertPropertyIgnoreCase(propertiesFile, "test_duplicate", "duplicate 3");
+            AssertPropertyIgnoreCase(propertiesFile, "test_Duplicate", "duplicate 3");
         }
 
         [Test]
