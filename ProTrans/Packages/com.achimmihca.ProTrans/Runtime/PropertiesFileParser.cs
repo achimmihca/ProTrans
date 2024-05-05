@@ -41,7 +41,7 @@ namespace ProTrans
 
                 if (map.ContainsKey(entry.Key))
                 {
-                    Debug.LogWarning($"An item with the same key has already been added. Key: {entry.Key}");
+                    Debug.LogWarning($"An item with the same key has already been added. Key: {entry.Key}, CultureInfo: {cultureInfo}");
                 }
                 map[entry.Key] = entry.Value;
             }
